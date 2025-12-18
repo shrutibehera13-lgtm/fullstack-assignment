@@ -1,0 +1,22 @@
+import './globals.css';
+import type { Metadata } from 'next';
+import { ReduxProvider } from './ReduxProvider';
+
+export const metadata: Metadata = {
+  title: 'Akhlahek Manager',
+  description: 'Construction dashboard',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <ReduxProvider>{children}</ReduxProvider>
+      </body>
+    </html>
+  );
+}

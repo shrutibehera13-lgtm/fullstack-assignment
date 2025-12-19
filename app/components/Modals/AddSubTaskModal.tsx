@@ -1,13 +1,13 @@
-// components/Modals/AddSubTaskModal.tsx
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { Employee, Subtask } from '@/app/types';
 
 interface AddSubTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (subtaskData: any) => void;
   projects: Array<{ id: string; name: string }>;
-  users: Array<{ id: string; name: string }>;
+  employees: Employee[];
   categories: string[];
 }
 
@@ -16,17 +16,14 @@ export default function AddSubTaskModal({
   onClose,
   onSubmit,
   projects = [],
-  users = [],
+  employees = [],
   categories = []
 }: AddSubTaskModalProps) {
-  const [subtaskData, setSubtaskData] = useState({
+  const [subtaskData, setSubtaskData] = useState < Partial<Subtask>>({
     title: '',
     projectName: '',
     location: '',
     category: '',
-    assignedTo: '',
-    startDate: '',
-    dueDate: ''
   });
 
   if (!isOpen) return null;
@@ -36,7 +33,7 @@ export default function AddSubTaskModal({
     const subtaskWithId = {
       ...subtaskData,
       id: Date.now().toString(),
-      status: 'pending'
+      status: 'in progress',
     };
     onSubmit(subtaskWithId);
     onClose();
@@ -45,13 +42,10 @@ export default function AddSubTaskModal({
       projectName: '',
       location: '',
       category: '',
-      assignedTo: '',
-      startDate: '',
-      dueDate: ''
     });
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof Subtask, value: Subtask[keyof Subtask]) => {
     setSubtaskData(prev => ({
       ...prev,
       [field]: value
@@ -160,15 +154,26 @@ export default function AddSubTaskModal({
             </label>
             <select
               required
-              value={subtaskData.assignedTo}
-              onChange={(e) => handleInputChange('assignedTo', e.target.value)}
+              value={subtaskData.assignedTo?._id}
+              onChange={(e) => {
+                const employeeId = e.target.value;
+                const employee = employees.find(user => user._id === employeeId);
+                if (employee) {
+                  handleInputChange('assignedTo', {
+                    _id: employee._id,
+                    name: employee.name,
+                    role: employee.role,
+                    isSkilled: employee.isSkilled
+                  });
+                }
+              }}
               className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                          focus:bg-white text-sm"
             >
               <option value="">Assigned To</option>
-              {users.map(user => (
-                <option key={user.id} value={user.id}>
+              {employees.map(user => (
+                <option key={user._id} value={user._id}>
                   {user.name}
                 </option>
               ))}
@@ -183,8 +188,8 @@ export default function AddSubTaskModal({
             <input
               type="date"
               required
-              value={subtaskData.startDate}
-              onChange={(e) => handleInputChange('startDate', e.target.value)}
+              value={subtaskData.startDate?.toISOString().split('T')[0]}
+              onChange={(e) => handleInputChange('startDate', new Date(e.target.value))}
               className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                          focus:bg-white text-sm"
@@ -199,15 +204,13 @@ export default function AddSubTaskModal({
             <input
               type="date"
               required
-              value={subtaskData.dueDate}
-              onChange={(e) => handleInputChange('dueDate', e.target.value)}
+              value={subtaskData.dueDate?.toISOString().split('T')[0]}
+              onChange={(e) => handleInputChange('dueDate', new Date(e.target.value))}
               className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                          focus:bg-white text-sm"
             />
           </div>
-
-          {/* Buttons */}
           <div className="flex justify-end space-x-3 pt-2">
             <button
               type="button"

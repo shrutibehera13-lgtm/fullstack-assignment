@@ -4,12 +4,13 @@ import AddSubTaskModal from './AddSubTaskModal';
 import SubtaskList from './SubtaskList';
 import { createTask } from '@/app/store/slices/tasksSlice';
 import { useAppDispatch } from '@/app/store/hooks';
+import { Employee, Subtask, Task } from '@/app/types';
 
 interface AssignNewTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   projects: Array<{ id: string; name: string }>;
-  users: Array<{ id: string; name: string }>;
+  employees: Employee[];
   categories: string[];
 }
 
@@ -17,19 +18,16 @@ export default function AssignNewTaskModal({
   isOpen,
   onClose,
   projects = [],
-  users = [],
+  employees = [],
   categories = [],
 }: AssignNewTaskModalProps) {
-  const [taskData, setTaskData] = useState({
+  const [taskData, setTaskData] = useState<Partial<Task>>({
     title: '',
     projectName: '',
     location: '',
     category: '',
-    assignedTo: '',
     priority: 'medium',
-    startDate: '',
-    endDate: '',
-    subtasks: [] as any[],
+    subtasks: [],
   });
 
   const dispatch = useAppDispatch();
@@ -49,17 +47,17 @@ export default function AssignNewTaskModal({
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof Task, value: Task[keyof Task]) => {
     setTaskData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handleAddSubtask = (subtask: any) => {
+  const handleAddSubtask = (subtask: Subtask) => {
     setTaskData((prev) => ({
       ...prev,
-      subtasks: [...prev.subtasks, subtask],
+      subtasks: [...(prev.subtasks ?? []), subtask],
     }));
   };
 
@@ -163,15 +161,25 @@ export default function AssignNewTaskModal({
               </label>
               <select
                 required
-                value={taskData.assignedTo}
-                onChange={(e) => handleInputChange('assignedTo', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
+                value={taskData?.assignedTo?._id}
+                onChange={(e) => {
+                  const employeeId = e.target.value;
+                  const employee = employees.find(user => user._id === employeeId);
+                  if (employee) {
+                    handleInputChange('assignedTo', {
+                      _id: employee._id,
+                      name: employee.name,
+                      role: employee.role,
+                      isSkilled: employee.isSkilled
+                    });
+                  }
+                }} className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                            focus:bg-white text-sm"
               >
                 <option value="">Assigned To</option>
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
+                {employees.map((user) => (
+                  <option key={user._id} value={user._id}>
                     {user.name}
                   </option>
                 ))}
@@ -186,7 +194,7 @@ export default function AssignNewTaskModal({
               <select
                 required
                 value={taskData.priority}
-                onChange={(e) => handleInputChange('priority', e.target.value)}
+                onChange={(e) => handleInputChange('priority', e.target.value as Task['priority'])}
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                            focus:bg-white text-sm"
@@ -205,8 +213,8 @@ export default function AssignNewTaskModal({
               <input
                 type="date"
                 required
-                value={taskData.startDate}
-                onChange={(e) => handleInputChange('startDate', e.target.value)}
+                value={taskData.startDate?.toISOString().split('T')[0]}
+                onChange={(e) => handleInputChange('startDate',new Date(e.target.value))}
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                            focus:bg-white text-sm"
@@ -221,8 +229,8 @@ export default function AssignNewTaskModal({
               <input
                 type="date"
                 required
-                value={taskData.endDate}
-                onChange={(e) => handleInputChange('endDate', e.target.value)}
+                value={taskData.endDate?.toISOString().split('T')[0]}
+                onChange={(e) => handleInputChange('endDate',new Date(e.target.value))}
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                            focus:bg-white text-sm"
@@ -244,10 +252,10 @@ export default function AssignNewTaskModal({
                 </button>
               </div>
               <div className="rounded-lg bg-gray-100 border border-transparent px-3 py-2 text-xs text-gray-600 min-h-[40px]">
-                {taskData.subtasks.length === 0 ? (
+                {taskData?.subtasks?.length === 0 ? (
                   <span className="text-gray-400">No subtasks added</span>
                 ) : (
-                  <SubtaskList subtasks={taskData.subtasks} />
+                  <SubtaskList subtasks={taskData?.subtasks ?? []} />
                 )}
               </div>
             </div>
@@ -277,8 +285,8 @@ export default function AssignNewTaskModal({
           onClose={() => setShowSubTaskModal(false)}
           onSubmit={handleAddSubtask}
           projects={projects}
-          users={users}
           categories={categories}
+          employees={employees}
         />
       )}
     </>

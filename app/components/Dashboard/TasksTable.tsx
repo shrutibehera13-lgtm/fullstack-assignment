@@ -14,8 +14,9 @@ import {
   deleteSubtask,
   updateSubtask,
 } from '@/app/store/slices/tasksSlice';
-import { Subtask, Task } from '@/app/types';
+import { Employee, Labour, Subtask, Task } from '@/app/types';
 import { formatDate } from '@/app/utils/date-utils';
+import { employees } from '@/app/dummy';
 
 type EditingSubtaskContext = {
   taskId: string;
@@ -51,10 +52,7 @@ export default function TasksTable() {
     { id: 'p1', name: 'Project A' },
     { id: 'p2', name: 'Project B' },
   ];
-  const users = [
-    { id: 'u1', name: 'Rajesh.K' },
-    { id: 'u2', name: 'John Doe' },
-  ];
+  
   const categories = ['Construction', 'Electrical', 'Plumbing'];
 
   useEffect(() => {
@@ -110,7 +108,7 @@ export default function TasksTable() {
 
   const handleCreateSubtask = async (formData: Partial<Subtask>) => {
     if (!selectedTaskId) return;
-    const payload = { ...formData, status: 'in progress' as Subtask["status"]};
+    const payload = { ...formData, status: 'in progress' as Subtask["status"] };
     await dispatch(
       createSubtask({
         taskId: selectedTaskId,
@@ -145,7 +143,7 @@ export default function TasksTable() {
     setIsAddSubTaskOpen(true);
   };
 
-  const handleOpenEditSubtask = (taskId: string, subtaskId: string) => {    
+  const handleOpenEditSubtask = (taskId: string, subtaskId: string) => {
     const backendTask = backendTasks.find(
       (t) => (t._id) === taskId
     );
@@ -415,7 +413,7 @@ export default function TasksTable() {
         onClose={() => setIsAddSubTaskOpen(false)}
         onSubmit={handleCreateSubtask}
         projects={projects}
-        users={users}
+        employees={employees}
         categories={categories}
       />
 

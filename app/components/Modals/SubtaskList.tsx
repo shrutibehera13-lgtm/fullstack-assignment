@@ -1,18 +1,6 @@
-// components/Modals/SubtaskList.tsx
-import React from 'react';
 import { Trash2, Edit2 } from 'lucide-react';
-
-interface Subtask {
-  id: string;
-  title: string;
-  projectName: string;
-  location: string;
-  category: string;
-  assignedTo: string;
-  startDate: string;
-  dueDate: string;
-  status: string;
-}
+import { Subtask } from '@/app/types';
+import { formatDate } from '@/app/utils/date-utils';
 
 interface SubtaskListProps {
   subtasks: Subtask[];
@@ -34,7 +22,7 @@ export default function SubtaskList({ subtasks = [], onRemoveSubtask }: SubtaskL
     <div className="space-y-3">
       {subtasks.map((subtask) => (
         <div
-          key={subtask.id}
+          key={subtask._id}
           className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg"
         >
           <div className="flex-1">
@@ -45,9 +33,9 @@ export default function SubtaskList({ subtasks = [], onRemoveSubtask }: SubtaskL
                 <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                   <span>{subtask.category}</span>
                   <span>•</span>
-                  <span>Assigned to: {subtask.assignedTo}</span>
+                  <span>Assigned to: {subtask.assignedTo .name}</span>
                   <span>•</span>
-                  <span>{subtask.startDate} - {subtask.dueDate}</span>
+                  <span>{formatDate(subtask.startDate)} - {formatDate(subtask.dueDate)}</span>
                 </div>
               </div>
             </div>
@@ -56,14 +44,14 @@ export default function SubtaskList({ subtasks = [], onRemoveSubtask }: SubtaskL
             <button
               type="button"
               className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
-              onClick={() => console.log('Edit subtask', subtask.id)}
+              onClick={() => console.log('Edit subtask', subtask._id)}
             >
               <Edit2 size={18} />
             </button>
             <button
               type="button"
               className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
-              onClick={() => onRemoveSubtask && onRemoveSubtask(subtask.id)}
+              onClick={() => onRemoveSubtask && onRemoveSubtask(subtask._id)}
             >
               <Trash2 size={18} />
             </button>

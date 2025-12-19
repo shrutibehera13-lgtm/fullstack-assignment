@@ -1,10 +1,12 @@
+import { Employee } from "./employee.types";
+
 export interface Task {
   _id: string;
   title: string;
   projectName: string;
   location: string;
   category: string;
-  assignedTo: {_id:string , name:string};
+  assignedTo: Pick<Employee, "name" | "_id" | "role" | "isSkilled">;
   priority: 'low' | 'medium' | 'high';
   startDate: Date;
   endDate: Date;
@@ -12,7 +14,7 @@ export interface Task {
 }
 
 export interface Subtask extends Omit<Task, "subtasks" | "endDate" | "priority"> {
-  dueDate: string,
+  dueDate: Date,
   delay:string,
   reasonForDelay:string,
   images:string[],

@@ -1,13 +1,14 @@
-// components/Modals/usage/AddManPowerUsageModal.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { employees } from '@/app/dummy';
+import { Employee } from '@/app/types';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (item: { workerName: string; role: string }) => void;
+  onSubmit: (workers: Employee[]) => void;
 }
 
 export default function AddManPowerUsageModal({
@@ -15,13 +16,11 @@ export default function AddManPowerUsageModal({
   onClose,
   onSubmit,
 }: Props) {
-  const [workerName, setWorkerName] = useState('');
-  const [role, setRole] = useState('');
+  const [workers, setWorkers] = useState<Employee[]>([]);
 
   useEffect(() => {
     if (!isOpen) {
-      setWorkerName('');
-      setRole('');
+      setWorkers([]);
     }
   }, [isOpen]);
 
@@ -29,8 +28,8 @@ export default function AddManPowerUsageModal({
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!workerName.trim()) return;
-    onSubmit({ workerName, role });
+    if (!workers.length) return;
+    onSubmit(workers);
     onClose();
   };
 
@@ -55,15 +54,32 @@ export default function AddManPowerUsageModal({
             <label className="block text-sm font-medium text-gray-800 mb-1">
               Worker Name
             </label>
-            <input
-              type="text"
-              value={workerName}
-              onChange={(e) => setWorkerName(e.target.value)}
+            <select
               className="w-full px-3 py-2 rounded-lg bg-gray-100 text-sm
                          border border-transparent focus:outline-none
                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                          focus:bg-white"
-            />
+            //  value={taskData?.assignedTo?._id}
+            //     onChange={(e) => {
+            //       const employeeId = e.target.value;
+            //       const employee = employees.find(user => user._id === employeeId);
+            //       if (employee) {
+            //         handleInputChange('assignedTo', {
+            //           _id: employee._id,
+            //           name: employee.name,
+            //           role: employee.role,
+            //           isSkilled: employee.isSkilled
+            //         });
+            //       }
+            //     }}
+            >
+              <option value="">Select Worker</option>
+              {employees.map((user) => (
+                <option key={user._id} value={user._id}>
+                  {user.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -72,8 +88,8 @@ export default function AddManPowerUsageModal({
             </label>
             <input
               type="text"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
+              // value={role}
+              // onChange={(e) => setRole(e.target.value)}
               className="w-full px-3 py-2 rounded-lg bg-gray-100 text-sm
                          border border-transparent focus:outline-none
                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500

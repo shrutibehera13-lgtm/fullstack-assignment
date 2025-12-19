@@ -7,6 +7,7 @@ import ProgressLogs from './ProgressLogs';
 import TasksTable from './TasksTable';
 import ProgressChart from './ProgressChart';
 import AssignNewTaskModal from '../Modals/AssignNewTaskModal';
+import { employees } from '@/app/dummy';
 
 const mockProjects = [
   { id: '1', name: 'Downtown Tower Plaza' },
@@ -14,12 +15,6 @@ const mockProjects = [
   { id: '3', name: 'Tech Park Office Complex' },
 ];
 
-const mockUsers = [
-  { id: '1', name: 'Amit Patel' },
-  { id: '2', name: 'Raj Kumar' },
-  { id: '3', name: 'Priya Sharma' },
-  { id: '4', name: 'Suresh Reddy' },
-];
 
 const mockCategories = [
   'Masonry & Plastering',
@@ -110,7 +105,7 @@ export default function Dashboard() {
         isOpen={showAssignTaskModal}
         onClose={() => setShowAssignTaskModal(false)}
         projects={mockProjects}
-        users={mockUsers}
+        employees={employees}
         categories={mockCategories}
       />
     </>

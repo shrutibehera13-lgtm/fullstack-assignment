@@ -1,11 +1,16 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { X, Upload } from 'lucide-react';
-import AddMaterialUsageModal from './AddMaterialUsageModal';
-import AddManPowerUsageModal from './AddManPowerUsageModal';
-import AddMachineUsageModal from './AddMachineUsageModal';
-import { MachineryUsage, ManPowerUsage, MaterialUsage, Subtask } from '@/app/types';
+import React, { useState, useEffect } from "react";
+import { X, Upload } from "lucide-react";
+import AddMaterialUsageModal from "./AddMaterialUsageModal";
+import AddManPowerUsageModal from "./AddManPowerUsageModal";
+import AddMachineUsageModal from "./AddMachineUsageModal";
+import {
+  MachineryUsage,
+  ManPowerUsage,
+  MaterialUsage,
+  Subtask,
+} from "@/app/types";
 
 interface UpdateSubTaskModalProps {
   isOpen: boolean;
@@ -14,16 +19,35 @@ interface UpdateSubTaskModalProps {
   onSave: (data: typeof emptyState) => void;
 }
 
-const emptyState: Omit<Subtask ,"dueDate"| "projectName" |"category" |"location" | "_id"| "assignedTo" | "startDate"   > = {
-  title: '',
+const emptyState: Omit<
+  Subtask,
+  | "dueDate"
+  | "projectName"
+  | "category"
+  | "location"
+  | "_id"
+  | "assignedTo"
+  | "startDate"
+> = {
+  title: "",
   status: "in progress",
-  delay: '',
-  reasonForDelay: '',
+  delay: "",
+  reasonForDelay: "",
   images: [] as string[],
   materialUsages: [],
   manPowerUsages: [],
   machineryUsages: [],
 };
+
+const statusOptions: Array<{
+  name: string;
+  value: Subtask["status"];
+}> = [
+  { name: "Not Started", value: "not started" },
+  { name: "In Progress", value: "in progress" },
+  { name: "Completed", value: "completed" },
+  { name: "Delayed", value: "delayed" },
+];
 
 export default function UpdateSubTaskModal({
   isOpen,
@@ -62,7 +86,7 @@ export default function UpdateSubTaskModal({
   };
 
   const handleFakeUpload = () => {
-    const url = 'https://via.placeholder.com/300x180.png?text=Uploaded';
+    const url = "https://via.placeholder.com/300x180.png?text=Uploaded";
     setForm((prev) => ({
       ...prev,
       images: [...prev.images, url],
@@ -93,12 +117,11 @@ export default function UpdateSubTaskModal({
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-        <div className="bg-white rounded-3xl w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="bg-white rounded-3xl w-full max-w-md shadow-xl max-h-[90vh] flex flex-col overflow-hidden">
+          {" "}
           {/* Header */}
           <div className="flex justify-between items-center px-6 pt-5 pb-3 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Update Task
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-900">Update Task</h2>
             <button
               type="button"
               onClick={onClose}
@@ -107,9 +130,10 @@ export default function UpdateSubTaskModal({
               <X size={20} className="text-gray-500" />
             </button>
           </div>
-
-          <form onSubmit={handleSave} className="px-6 pt-4 pb-6 space-y-3">
-            {/* Task/Subtask Name */}
+          <form
+            onSubmit={handleSave}
+            className="px-6 pt-4 pb-6 space-y-3 flex-1 overflow-y-auto custom-scrollbar"
+          >
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-800">
                 Task Name/Subtask Name
@@ -117,7 +141,7 @@ export default function UpdateSubTaskModal({
               <input
                 type="text"
                 value={form.title}
-                onChange={(e) => handleChange('title', e.target.value)}
+                onChange={(e) => handleChange("title", e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 text-sm
                            border border-transparent focus:outline-none
                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500
@@ -130,15 +154,25 @@ export default function UpdateSubTaskModal({
               <label className="block text-sm font-medium text-gray-800">
                 Status
               </label>
-              <input
-                type="text"
+              <select
                 value={form.status}
-                onChange={(e) => handleChange('status', e.target.value)}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    status: e.target.value as Subtask["status"],
+                  }))
+                }
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 text-sm
-                           border border-transparent focus:outline-none
-                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                           focus:bg-white"
-              />
+             border border-transparent focus:outline-none
+             focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+             focus:bg-white"
+              >
+                {statusOptions.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Delay */}
@@ -148,9 +182,9 @@ export default function UpdateSubTaskModal({
               </label>
               <input
                 type="text"
-                value={form.delay?? ""}
+                value={form.delay ?? ""}
                 name={"delay"}
-                onChange={(e) => handleChange('delay', e.target.value)}
+                onChange={(e) => handleChange("delay", e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 text-sm
                            border border-transparent focus:outline-none
                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500
@@ -165,9 +199,7 @@ export default function UpdateSubTaskModal({
               </label>
               <textarea
                 value={form.reasonForDelay}
-                onChange={(e) =>
-                  handleChange('reasonForDelay', e.target.value)
-                }
+                onChange={(e) => handleChange("reasonForDelay", e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 text-sm
                            border border-transparent focus:outline-none
@@ -264,6 +296,7 @@ export default function UpdateSubTaskModal({
         isOpen={manPowerModalOpen}
         onClose={() => setManPowerModalOpen(false)}
         onSubmit={addManPowerUsage}
+        selectedManPowers={form.manPowerUsages}
       />
       <AddMachineUsageModal
         isOpen={machineryModalOpen}

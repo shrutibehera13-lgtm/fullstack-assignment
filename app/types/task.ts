@@ -7,21 +7,22 @@ export interface Task {
   location: string;
   category: string;
   assignedTo: Pick<Employee, "name" | "_id" | "role" | "isSkilled">;
-  priority: 'low' | 'medium' | 'high';
+  priority: "low" | "medium" | "high";
   startDate: Date;
   endDate: Date;
   subtasks: Subtask[];
 }
 
-export interface Subtask extends Omit<Task, "subtasks" | "endDate" | "priority"> {
-  dueDate: Date,
-  delay:string,
-  reasonForDelay:string,
-  images:string[],
-  materialUsages:MaterialUsage[],
-  machineryUsages:MachineryUsage[],
-  manPowerUsages:ManPowerUsage[],
-  status:"in progress" | "delayed" | 'completed'| 'not started'
+export interface Subtask
+  extends Omit<Task, "subtasks" | "endDate" | "priority"> {
+  dueDate: Date;
+  delay: string;
+  reasonForDelay: string;
+  images: string[];
+  materialUsages: MaterialUsage[];
+  machineryUsages: MachineryUsage[];
+  manPowerUsages: ManPowerUsage[];
+  status: "in progress" | "delayed" | "completed" | "not started";
 }
 
 export interface MaterialUsage {
@@ -29,16 +30,15 @@ export interface MaterialUsage {
   description: string;
 }
 
-export interface ManPowerUsage {
-  workerName: string;
-  role: string;
-}
+export type ManPowerUsage = Pick<
+  Employee,
+  "_id" | "isSkilled" | "name" | "role"
+>;
 
- export interface MachineryUsage {
+export interface MachineryUsage {
   machineName: string;
   description: string;
 }
-
 
 export interface User {
   id: string;

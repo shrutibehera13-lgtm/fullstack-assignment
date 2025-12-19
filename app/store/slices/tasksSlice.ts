@@ -1,14 +1,26 @@
-'use client';
+"use client";
 
-import { Subtask, Task } from '@/app/types';
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { Subtask, Task } from "@/app/types";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+
+interface TaskStatusSummary {
+  _id: string;
+  title: string;
+  totalSubtasks: number;
+  totalCompletedSubtasks: number;
+  inprogressSubtasks: number;
+  delayedSubtasks: number;
+  notStartedSubtasks: number;
+}
 
 interface TasksState {
   items: Task[];
   loading: boolean;
   error: string | null;
   currentSubtask: any | null;
-
+  statusSummary: TaskStatusSummary[]; // NEW
+  statusSummaryLoading: boolean; // NEW
+  statusSummaryError: string | null;
 }
 
 const initialState: TasksState = {
@@ -16,17 +28,18 @@ const initialState: TasksState = {
   loading: false,
   error: null,
   currentSubtask: null,
-
+  statusSummary: [],
+  statusSummaryLoading: false,
+  statusSummaryError: null,
 };
 
-const API_BASE = 'http://localhost:5000/api/tasks';
-
+const API_BASE = "http://localhost:5000/api/tasks";
 
 export const fetchTasks = createAsyncThunk<
   any[],
   string | undefined,
   { rejectValue: string }
->('tasks/fetchTasks', async (searchTerm, { rejectWithValue }) => {
+>("tasks/fetchTasks", async (searchTerm, { rejectWithValue }) => {
   try {
     const search = searchTerm?.trim();
     const url = search
@@ -36,104 +49,99 @@ export const fetchTasks = createAsyncThunk<
     const res = await fetch(url);
     if (!res.ok) {
       const errorBody = await res.json().catch(() => ({}));
-      return rejectWithValue(errorBody.error || 'Failed to fetch tasks');
+      return rejectWithValue(errorBody.error || "Failed to fetch tasks");
     }
 
     const data = await res.json();
     return data as any[];
   } catch (err: any) {
-    return rejectWithValue(err.message || 'Network error');
+    return rejectWithValue(err.message || "Network error");
   }
 });
 
+export const createTask = createAsyncThunk<any, any, { rejectValue: string }>(
+  "tasks/createTask",
+  async (taskData, { rejectWithValue }) => {
+    try {
+      const res = await fetch(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(taskData),
+      });
 
-export const createTask = createAsyncThunk<
-  any,
-  any,
-  { rejectValue: string }
->('tasks/createTask', async (taskData, { rejectWithValue }) => {
-  try {
-    const res = await fetch(API_BASE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(taskData),
-    });
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        return rejectWithValue(errorBody.error || "Failed to create task");
+      }
 
-    if (!res.ok) {
-      const errorBody = await res.json().catch(() => ({}));
-      return rejectWithValue(errorBody.error || 'Failed to create task');
+      const createdTask = await res.json();
+      return createdTask;
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Network error");
     }
-
-    const createdTask = await res.json();
-    return createdTask;
-  } catch (err: any) {
-    return rejectWithValue(err.message || 'Network error');
   }
-});
-
+);
 
 export const fetchTaskById = createAsyncThunk<
   any,
   string,
   { rejectValue: string }
->('tasks/fetchTaskById', async (id, { rejectWithValue }) => {
+>("tasks/fetchTaskById", async (id, { rejectWithValue }) => {
   try {
     const res = await fetch(`${API_BASE}/${id}`);
     if (!res.ok) {
       const errorBody = await res.json().catch(() => ({}));
-      return rejectWithValue(errorBody.error || 'Failed to fetch task');
+      return rejectWithValue(errorBody.error || "Failed to fetch task");
     }
     const task = await res.json();
     return task;
   } catch (err: any) {
-    return rejectWithValue(err.message || 'Network error');
+    return rejectWithValue(err.message || "Network error");
   }
 });
-
 
 export const updateTask = createAsyncThunk<
   any,
   { id: string; data: any },
   { rejectValue: string }
->('tasks/updateTask', async ({ id, data }, { rejectWithValue }) => {
+>("tasks/updateTask", async ({ id, data }, { rejectWithValue }) => {
   try {
     const res = await fetch(`${API_BASE}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
 
     if (!res.ok) {
       const errorBody = await res.json().catch(() => ({}));
-      return rejectWithValue(errorBody.error || 'Failed to update task');
+      return rejectWithValue(errorBody.error || "Failed to update task");
     }
 
     const updatedTask = await res.json();
     return updatedTask;
   } catch (err: any) {
-    return rejectWithValue(err.message || 'Network error');
+    return rejectWithValue(err.message || "Network error");
   }
 });
-
 
 export const deleteTask = createAsyncThunk<
   string,
   string,
   { rejectValue: string }
->('tasks/deleteTask', async (id, { rejectWithValue }) => {
+>("tasks/deleteTask", async (id, { rejectWithValue }) => {
   try {
     const res = await fetch(`${API_BASE}/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
 
     if (!res.ok) {
       const errorBody = await res.json().catch(() => ({}));
-      return rejectWithValue(errorBody.error || 'Failed to delete task');
+      return rejectWithValue(errorBody.error || "Failed to delete task");
     }
 
     return id;
   } catch (err: any) {
-    return rejectWithValue(err.message || 'Network error');
+    return rejectWithValue(err.message || "Network error");
   }
 });
 
@@ -141,51 +149,54 @@ export const createSubtask = createAsyncThunk<
   string,
   { taskId: string; subtask: Partial<Subtask> },
   { rejectValue: string }
->('tasks/createSubtask', async ({ taskId, subtask }, { rejectWithValue, dispatch }) => {
-  try {
-    const res = await fetch(`${API_BASE}/${taskId}/subtasks`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(subtask),
-    });
+>(
+  "tasks/createSubtask",
+  async ({ taskId, subtask }, { rejectWithValue, dispatch }) => {
+    try {
+      const res = await fetch(`${API_BASE}/${taskId}/subtasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(subtask),
+      });
 
-    if (!res.ok) {
-      const errorBody = await res.json().catch(() => ({}));
-      return rejectWithValue(errorBody.error || 'Failed to create subtask');
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        return rejectWithValue(errorBody.error || "Failed to create subtask");
+      }
+
+      const updatedTask = await res.json();
+      dispatch(fetchTasks());
+      return updatedTask;
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Network error");
     }
-
-    const updatedTask = await res.json();
-    dispatch(fetchTasks());
-    return updatedTask;
-  } catch (err: any) {
-    return rejectWithValue(err.message || 'Network error');
   }
-});
+);
 
 export const updateSubtask = createAsyncThunk<
   any,
   { taskId: string; subtaskId: string; data: any },
   { rejectValue: string }
 >(
-  'tasks/updateSubtask',
+  "tasks/updateSubtask",
   async ({ taskId, subtaskId, data }, { rejectWithValue, dispatch }) => {
     try {
       const res = await fetch(`${API_BASE}/${taskId}/subtasks/${subtaskId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
       if (!res.ok) {
         const errorBody = await res.json().catch(() => ({}));
-        return rejectWithValue(errorBody.error || 'Failed to update subtask');
+        return rejectWithValue(errorBody.error || "Failed to update subtask");
       }
 
       const updatedSubtaskOrTask = await res.json();
       dispatch(fetchTasks());
       return updatedSubtaskOrTask;
     } catch (err: any) {
-      return rejectWithValue(err.message || 'Network error');
+      return rejectWithValue(err.message || "Network error");
     }
   }
 );
@@ -195,23 +206,23 @@ export const deleteSubtask = createAsyncThunk<
   { taskId: string; subtaskId: string },
   { rejectValue: string }
 >(
-  'tasks/deleteSubtask',
+  "tasks/deleteSubtask",
   async ({ taskId, subtaskId }, { rejectWithValue, dispatch }) => {
     try {
       const res = await fetch(`${API_BASE}/${taskId}/subtasks/${subtaskId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!res.ok) {
         const errorBody = await res.json().catch(() => ({}));
-        return rejectWithValue(errorBody.error || 'Failed to delete subtask');
+        return rejectWithValue(errorBody.error || "Failed to delete subtask");
       }
 
       const resp = await res.json();
       dispatch(fetchTasks());
       return resp;
     } catch (err: any) {
-      return rejectWithValue(err.message || 'Network error');
+      return rejectWithValue(err.message || "Network error");
     }
   }
 );
@@ -221,23 +232,43 @@ export const fetchSubTaskById = createAsyncThunk<
   { taskId: string; subtaskId: string },
   { rejectValue: string }
 >(
-  'tasks/fetchSubTaskById',   // 🔹 unique type prefix
+  "tasks/fetchSubTaskById", // 🔹 unique type prefix
   async ({ taskId, subtaskId }, { rejectWithValue }) => {
     try {
       const res = await fetch(`${API_BASE}/${taskId}/subtasks/${subtaskId}`);
       if (!res.ok) {
         const errorBody = await res.json().catch(() => ({}));
-        return rejectWithValue(errorBody.error || 'Failed to fetch subtask');
+        return rejectWithValue(errorBody.error || "Failed to fetch subtask");
       }
       const subtask = await res.json();
       return subtask;
     } catch (err: any) {
-      return rejectWithValue(err.message || 'Network error');
+      return rejectWithValue(err.message || "Network error");
     }
   }
 );
+
+export const fetchStatusSummary = createAsyncThunk<
+  TaskStatusSummary[],
+  void,
+  { rejectValue: string }
+>("tasks/fetchStatusSummary", async (_, { rejectWithValue }) => {
+  try {
+    const res = await fetch(`${API_BASE}/status-summary`);
+    if (!res.ok) {
+      const errorBody = await res.json().catch(() => ({}));
+      return rejectWithValue(
+        errorBody.error || "Failed to fetch status summary"
+      );
+    }
+    const data = await res.json();
+    return data as TaskStatusSummary[];
+  } catch (err: any) {
+    return rejectWithValue(err.message || "Network error");
+  }
+});
 const tasksSlice = createSlice({
-  name: 'tasks',
+  name: "tasks",
   initialState,
   reducers: {
     setTasks(state, action: PayloadAction<any[]>) {
@@ -257,8 +288,7 @@ const tasksSlice = createSlice({
       })
       .addCase(fetchTasks.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          (action.payload as string) || 'Failed to fetch tasks';
+        state.error = (action.payload as string) || "Failed to fetch tasks";
       });
 
     // createTask
@@ -273,8 +303,7 @@ const tasksSlice = createSlice({
       })
       .addCase(createTask.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          (action.payload as string) || 'Failed to create task';
+        state.error = (action.payload as string) || "Failed to create task";
       });
 
     // fetchTaskById
@@ -299,8 +328,7 @@ const tasksSlice = createSlice({
       })
       .addCase(fetchTaskById.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          (action.payload as string) || 'Failed to fetch task';
+        state.error = (action.payload as string) || "Failed to fetch task";
       });
 
     // updateTask
@@ -325,8 +353,7 @@ const tasksSlice = createSlice({
       })
       .addCase(updateTask.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          (action.payload as string) || 'Failed to update task';
+        state.error = (action.payload as string) || "Failed to update task";
       });
 
     // deleteTask
@@ -343,8 +370,7 @@ const tasksSlice = createSlice({
       })
       .addCase(deleteTask.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          (action.payload as string) || 'Failed to delete task';
+        state.error = (action.payload as string) || "Failed to delete task";
       });
 
     // createSubtask
@@ -358,8 +384,7 @@ const tasksSlice = createSlice({
       })
       .addCase(createSubtask.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          (action.payload as string) || 'Failed to create subtask';
+        state.error = (action.payload as string) || "Failed to create subtask";
       });
 
     // updateSubtask
@@ -373,8 +398,7 @@ const tasksSlice = createSlice({
       })
       .addCase(updateSubtask.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          (action.payload as string) || 'Failed to update subtask';
+        state.error = (action.payload as string) || "Failed to update subtask";
       });
 
     // deleteSubtask
@@ -388,8 +412,7 @@ const tasksSlice = createSlice({
       })
       .addCase(deleteSubtask.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          (action.payload as string) || 'Failed to delete subtask';
+        state.error = (action.payload as string) || "Failed to delete subtask";
       });
 
     builder
@@ -407,8 +430,25 @@ const tasksSlice = createSlice({
       )
       .addCase(fetchSubTaskById.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          (action.payload as string) || 'Failed to fetch subtask';
+        state.error = (action.payload as string) || "Failed to fetch subtask";
+      });
+    // fetchStatusSummary
+    builder
+      .addCase(fetchStatusSummary.pending, (state) => {
+        state.statusSummaryLoading = true;
+        state.statusSummaryError = null;
+      })
+      .addCase(
+        fetchStatusSummary.fulfilled,
+        (state, action: PayloadAction<TaskStatusSummary[]>) => {
+          state.statusSummaryLoading = false;
+          state.statusSummary = action.payload;
+        }
+      )
+      .addCase(fetchStatusSummary.rejected, (state, action) => {
+        state.statusSummaryLoading = false;
+        state.statusSummaryError =
+          (action.payload as string) || "Failed to fetch status summary";
       });
   },
 });

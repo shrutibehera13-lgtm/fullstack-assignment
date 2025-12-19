@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useMemo } from 'react';
-import { Search, Eye, Pencil, Trash2, X } from 'lucide-react';
-import AddSubTaskModal from '../Modals/AddSubTaskModal';
-import ViewTaskModal from '../Modals/ViewTaskModalProps';
-import UpdateSubTaskModal from '../Modals/UpdateSubTaskModal';
-import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
+import React, { useEffect, useState, useMemo } from "react";
+import { Search, Eye, Pencil, Trash2, X } from "lucide-react";
+import AddSubTaskModal from "../Modals/AddSubTaskModal";
+import ViewTaskModal from "../Modals/ViewTaskModalProps";
+import UpdateSubTaskModal from "../Modals/UpdateSubTaskModal";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import {
   fetchTasks,
   deleteTask,
@@ -13,10 +13,10 @@ import {
   createSubtask,
   deleteSubtask,
   updateSubtask,
-} from '@/app/store/slices/tasksSlice';
-import { Employee, Labour, Subtask, Task } from '@/app/types';
-import { formatDate } from '@/app/utils/date-utils';
-import { employees } from '@/app/dummy';
+} from "@/app/store/slices/tasksSlice";
+import { Employee, Labour, Subtask, Task } from "@/app/types";
+import { formatDate } from "@/app/utils/date-utils";
+import { employees } from "@/app/dummy";
 
 type EditingSubtaskContext = {
   taskId: string;
@@ -25,10 +25,12 @@ type EditingSubtaskContext = {
 
 export default function TasksTable() {
   const dispatch = useAppDispatch();
-  const { items: backendTasks, loading, error } = useAppSelector(
-    (state) => state.tasks
-  );
-  const [searchTerm, setSearchTerm] = useState('');
+  const {
+    items: backendTasks,
+    loading,
+    error,
+  } = useAppSelector((state) => state.tasks);
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isAddSubTaskOpen, setIsAddSubTaskOpen] = useState(false);
   const [isViewTaskOpen, setIsViewTaskOpen] = useState(false);
@@ -46,14 +48,15 @@ export default function TasksTable() {
   const [editingSubtask, setEditingSubtask] =
     useState<EditingSubtaskContext>(null);
 
-  const [updateInitialValues, setUpdateInitialValues] = useState<Subtask | null>(null);
+  const [updateInitialValues, setUpdateInitialValues] =
+    useState<Subtask | null>(null);
 
   const projects = [
-    { id: 'p1', name: 'Project A' },
-    { id: 'p2', name: 'Project B' },
+    { id: "p1", name: "Project A" },
+    { id: "p2", name: "Project B" },
   ];
-  
-  const categories = ['Construction', 'Electrical', 'Plumbing'];
+
+  const categories = ["Construction", "Electrical", "Plumbing"];
 
   useEffect(() => {
     dispatch(fetchTasks());
@@ -67,17 +70,14 @@ export default function TasksTable() {
     return () => clearTimeout(handler);
   }, [dispatch, searchTerm]);
 
-  const uiTasks: Task[] = useMemo(
-    () => backendTasks,
-    [backendTasks]
-  );
+  const uiTasks: Task[] = useMemo(() => backendTasks, [backendTasks]);
 
   const selectedUiTask: Task | null = useMemo(() => {
     if (!selectedTaskId) return null;
     const backendTask = backendTasks.find(
       (t: any) => (t._id || t.id) === selectedTaskId
     );
-    return backendTask ?? null
+    return backendTask ?? null;
   }, [selectedTaskId, backendTasks]);
 
   const handleViewTask = (id: string) => {
@@ -96,7 +96,7 @@ export default function TasksTable() {
 
   const handleDeleteTask = async (id: string) => {
     const confirmDelete = window.confirm(
-      'Are you sure you want to delete this task?'
+      "Are you sure you want to delete this task?"
     );
     if (!confirmDelete) return;
     await dispatch(deleteTask(id));
@@ -108,7 +108,7 @@ export default function TasksTable() {
 
   const handleCreateSubtask = async (formData: Partial<Subtask>) => {
     if (!selectedTaskId) return;
-    const payload = { ...formData, status: 'in progress' as Subtask["status"] };
+    const payload = { ...formData, status: "in progress" as Subtask["status"] };
     await dispatch(
       createSubtask({
         taskId: selectedTaskId,
@@ -144,9 +144,7 @@ export default function TasksTable() {
   };
 
   const handleOpenEditSubtask = (taskId: string, subtaskId: string) => {
-    const backendTask = backendTasks.find(
-      (t) => (t._id) === taskId
-    );
+    const backendTask = backendTasks.find((t) => t._id === taskId);
     const backendSubtask = backendTask?.subtasks?.find(
       (st) => st._id === subtaskId
     );
@@ -156,25 +154,13 @@ export default function TasksTable() {
     setIsUpdateSubTaskOpen(true);
   };
 
-  const handleUpdateSubtaskSave = async (data: any) => {
+  const handleUpdateSubtaskSave = async (data: Partial<Subtask>) => {
     if (!editingSubtask) return;
-
-    const payload = {
-      title: data.name,
-      status: data.status,
-      delay: data.delay,
-      reasonForDelay: data.reasonForDelay,
-      images: data.images,
-      materialUsages: data.materialUsages,
-      manPowerUsages: data.manPowerUsages,
-      machineryUsages: data.machineryUsages,
-    };
-
     await dispatch(
       updateSubtask({
         taskId: editingSubtask.taskId,
         subtaskId: editingSubtask.subtaskId,
-        data: payload,
+        data,
       })
     );
 
@@ -227,14 +213,12 @@ export default function TasksTable() {
         <div className="space-y-6">
           {uiTasks.map((task) => {
             const completedCount = task.subtasks.filter(
-              (s) => s.status.toLowerCase() === 'completed'
+              (s) => s.status.toLowerCase() === "completed"
             ).length;
             const progress =
               task.subtasks.length === 0
                 ? 0
-                : Math.round(
-                  (completedCount / task.subtasks.length) * 100
-                );
+                : Math.round((completedCount / task.subtasks.length) * 100);
 
             return (
               <div
@@ -354,7 +338,9 @@ export default function TasksTable() {
                                 <button
                                   type="button"
                                   className="inline-flex items-center justify-center rounded-full p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                                  onClick={() => handleViewSubtask(task._id, subTask._id)}
+                                  onClick={() =>
+                                    handleViewSubtask(task._id, subTask._id)
+                                  }
                                   title="View"
                                 >
                                   <Eye size={16} />
@@ -466,7 +452,7 @@ export default function TasksTable() {
 
             <div className="px-5 py-4 text-sm text-gray-700">
               <p>
-                Are you sure you want to delete subtask{' '}
+                Are you sure you want to delete subtask{" "}
                 <span className="font-semibold">
                   “{deleteTarget.subtaskName}”
                 </span>

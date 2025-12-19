@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
-import AddSubTaskModal from './AddSubTaskModal';
-import SubtaskList from './SubtaskList';
-import { createTask } from '@/app/store/slices/tasksSlice';
-import { useAppDispatch } from '@/app/store/hooks';
-import { Employee, Subtask, Task } from '@/app/types';
+import React, { useState } from "react";
+import { X } from "lucide-react";
+import AddSubTaskModal from "./AddSubTaskModal";
+import SubtaskList from "./SubtaskList";
+import { createTask } from "@/app/store/slices/tasksSlice";
+import { useAppDispatch } from "@/app/store/hooks";
+import { Employee, Subtask, Task } from "@/app/types";
 
 interface AssignNewTaskModalProps {
   isOpen: boolean;
@@ -22,11 +22,11 @@ export default function AssignNewTaskModal({
   categories = [],
 }: AssignNewTaskModalProps) {
   const [taskData, setTaskData] = useState<Partial<Task>>({
-    title: '',
-    projectName: '',
-    location: '',
-    category: '',
-    priority: 'medium',
+    title: "",
+    projectName: "",
+    location: "",
+    category: "",
+    priority: "medium",
     subtasks: [],
   });
 
@@ -42,7 +42,7 @@ export default function AssignNewTaskModal({
       onClose();
     } else {
       const errMsg =
-        (resultAction.payload as string) || 'Failed to create task';
+        (resultAction.payload as string) || "Failed to create task";
       alert(errMsg);
     }
   };
@@ -64,10 +64,13 @@ export default function AssignNewTaskModal({
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-        <div className="bg-white rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-xl">
+        <div className="bg-white rounded-3xl w-full max-w-md max-h-[90vh] shadow-xl flex flex-col overflow-hidden">
+          {" "}
           {/* Header */}
           <div className="flex justify-between items-center px-6 pt-6 pb-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Assign New Task</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Assign New Task
+            </h2>
             <button
               type="button"
               onClick={onClose}
@@ -76,8 +79,11 @@ export default function AssignNewTaskModal({
               <X size={20} className="text-gray-500" />
             </button>
           </div>
-
-          <form onSubmit={handleSubmit} className="px-6 pt-4 pb-6 space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="px-6 pt-4 pb-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar"
+          >
+            {" "}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-800">
                 Task Title
@@ -86,14 +92,12 @@ export default function AssignNewTaskModal({
                 type="text"
                 required
                 value={taskData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
+                onChange={(e) => handleInputChange("title", e.target.value)}
                 placeholder="Task Title"
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                           focus:bg-white text-sm"
+                           focus:outline-none text-sm"
               />
             </div>
-
             {/* Project Name */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-800">
@@ -102,10 +106,11 @@ export default function AssignNewTaskModal({
               <select
                 required
                 value={taskData.projectName}
-                onChange={(e) => handleInputChange('projectName', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("projectName", e.target.value)
+                }
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                           focus:bg-white text-sm"
+                           focus:outline-none text-sm"
               >
                 <option value="">Project Name</option>
                 {projects.map((project) => (
@@ -115,7 +120,6 @@ export default function AssignNewTaskModal({
                 ))}
               </select>
             </div>
-
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-800">
                 Location/Floor/Room
@@ -124,14 +128,12 @@ export default function AssignNewTaskModal({
                 type="text"
                 required
                 value={taskData.location}
-                onChange={(e) => handleInputChange('location', e.target.value)}
+                onChange={(e) => handleInputChange("location", e.target.value)}
                 placeholder="Location/Floor/Room"
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                           focus:bg-white text-sm"
+                           focus:outline-none text-sm"
               />
             </div>
-
             {/* Task Category */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-800">
@@ -140,10 +142,9 @@ export default function AssignNewTaskModal({
               <select
                 required
                 value={taskData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
+                onChange={(e) => handleInputChange("category", e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                           focus:bg-white text-sm"
+                           focus:outline-none text-sm"
               >
                 <option value="">Task Category</option>
                 {categories.map((category) => (
@@ -153,7 +154,6 @@ export default function AssignNewTaskModal({
                 ))}
               </select>
             </div>
-
             {/* Assigned To */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-800">
@@ -164,18 +164,20 @@ export default function AssignNewTaskModal({
                 value={taskData?.assignedTo?._id}
                 onChange={(e) => {
                   const employeeId = e.target.value;
-                  const employee = employees.find(user => user._id === employeeId);
+                  const employee = employees.find(
+                    (user) => user._id === employeeId
+                  );
                   if (employee) {
-                    handleInputChange('assignedTo', {
+                    handleInputChange("assignedTo", {
                       _id: employee._id,
                       name: employee.name,
                       role: employee.role,
-                      isSkilled: employee.isSkilled
+                      isSkilled: employee.isSkilled,
                     });
                   }
-                }} className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                           focus:bg-white text-sm"
+                }}
+                className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
+                           focus:outline-none text-sm"
               >
                 <option value="">Assigned To</option>
                 {employees.map((user) => (
@@ -185,7 +187,6 @@ export default function AssignNewTaskModal({
                 ))}
               </select>
             </div>
-
             {/* Priority */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-800">
@@ -194,17 +195,20 @@ export default function AssignNewTaskModal({
               <select
                 required
                 value={taskData.priority}
-                onChange={(e) => handleInputChange('priority', e.target.value as Task['priority'])}
+                onChange={(e) =>
+                  handleInputChange(
+                    "priority",
+                    e.target.value as Task["priority"]
+                  )
+                }
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                           focus:bg-white text-sm"
+                           focus:outline-none  text-sm"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
             </div>
-
             {/* Start Date */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-800">
@@ -213,14 +217,14 @@ export default function AssignNewTaskModal({
               <input
                 type="date"
                 required
-                value={taskData.startDate?.toISOString().split('T')[0]}
-                onChange={(e) => handleInputChange('startDate',new Date(e.target.value))}
+                value={taskData.startDate?.toISOString().split("T")[0]}
+                onChange={(e) =>
+                  handleInputChange("startDate", new Date(e.target.value))
+                }
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                           focus:bg-white text-sm"
+                           focus:outline-none text-sm"
               />
             </div>
-
             {/* End Date */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-800">
@@ -229,14 +233,14 @@ export default function AssignNewTaskModal({
               <input
                 type="date"
                 required
-                value={taskData.endDate?.toISOString().split('T')[0]}
-                onChange={(e) => handleInputChange('endDate',new Date(e.target.value))}
+                value={taskData.endDate?.toISOString().split("T")[0]}
+                onChange={(e) =>
+                  handleInputChange("endDate", new Date(e.target.value))
+                }
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                           focus:bg-white text-sm"
+                           focus:outline-nonetext-sm"
               />
             </div>
-
             {/* Subtask */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
@@ -259,7 +263,6 @@ export default function AssignNewTaskModal({
                 )}
               </div>
             </div>
-
             {/* Bottom buttons */}
             <div className="pt-4 mt-2 border-t border-gray-200 flex justify-between gap-3">
               <button

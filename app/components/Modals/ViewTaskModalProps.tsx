@@ -1,19 +1,20 @@
-import React from 'react';
-import { X } from 'lucide-react';
-import { Subtask, Task } from '@/app/types';
-import { formatDate } from '@/app/utils/date-utils';
+import React from "react";
+import { X } from "lucide-react";
+import { ManPowerUsage, Subtask, Task } from "@/app/types";
+import { formatDate } from "@/app/utils/date-utils";
+import { format } from "path";
 
 interface ViewTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  task:  Task;
-  subtaskId?: string | null; 
+  task: Task;
+  subtaskId?: string | null;
 }
 
 const placeholderImages = [
-  'https://images.pexels.com/photos/585419/pexels-photo-585419.jpeg?auto=compress&cs=tinysrgb&w=400',
-  'https://images.pexels.com/photos/280923/pexels-photo-280923.jpeg?auto=compress&cs=tinysrgb&w=400',
-  'https://images.pexels.com/photos/159306/construction-site-build-construction-work-159306.jpeg?auto=compress&cs=tinysrgb&w=400',
+  "https://images.pexels.com/photos/585419/pexels-photo-585419.jpeg?auto=compress&cs=tinysrgb&w=400",
+  "https://images.pexels.com/photos/280923/pexels-photo-280923.jpeg?auto=compress&cs=tinysrgb&w=400",
+  "https://images.pexels.com/photos/159306/construction-site-build-construction-work-159306.jpeg?auto=compress&cs=tinysrgb&w=400",
 ];
 
 export default function ViewTaskModal({
@@ -25,7 +26,7 @@ export default function ViewTaskModal({
   if (!isOpen) return null;
 
   const completedCount = task.subtasks.filter(
-    (s) => s.status.toLowerCase() === 'completed'
+    (s) => s.status.toLowerCase() === "completed"
   ).length;
   const progress =
     task.subtasks.length === 0
@@ -33,13 +34,29 @@ export default function ViewTaskModal({
       : Math.round((completedCount / task.subtasks.length) * 100);
 
   const overallStatus =
-    completedCount === task.subtasks.length ? 'Completed' : 'In Progress';
+    completedCount === task.subtasks.length ? "Completed" : "In Progress";
 
   const visibleSubTasks =
     subtaskId == null
       ? task.subtasks
       : task.subtasks.filter((st) => st._id === subtaskId);
-      
+
+  const getFormattedString = (text: string | undefined) => {
+    if (!text) return "N/A";
+    if (!text.length) return "N/A";
+    return text;
+  };
+
+  const getManpowerUsageStats = (data: ManPowerUsage[]) => {
+    console.log(data);
+    let skilled = 0,
+      unSkilled = 0;
+    data.forEach((item) => {
+      if (item.isSkilled) skilled += 1;
+      else unSkilled += 1;
+    });
+    return `Skilled: ${skilled} | UnSkilled: ${unSkilled}`;
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -54,7 +71,7 @@ export default function ViewTaskModal({
               Detailed view of phase progress and task breakdown
               {subtaskId && visibleSubTasks.length === 1
                 ? ` • ${visibleSubTasks[0].title}`
-                : ''}
+                : ""}
             </p>
           </div>
           <button
@@ -70,9 +87,7 @@ export default function ViewTaskModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
               <p className="text-xs text-gray-500 mb-1">Progress</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {progress}%
-              </p>
+              <p className="text-lg font-semibold text-gray-900">{progress}%</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
               <p className="text-xs text-gray-500 mb-1">Status</p>
@@ -110,7 +125,8 @@ export default function ViewTaskModal({
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-gray-600">
-                      {formatDate(subTask.startDate)} - {subTask.dueDate}
+                      {formatDate(subTask.startDate)} -{" "}
+                      {formatDate(subTask.dueDate)}
                     </p>
                     <button
                       type="button"
@@ -145,16 +161,24 @@ export default function ViewTaskModal({
                     {subTask.assignedTo.name}
                   </p>
                   <p>
-                    <span className="font-semibold">Material Used</span>{' '}
-                {subTask.materialUsages.map((material)=>material.materialUsed).join(", ")}
+                    <span className="font-semibold">Material Used</span>{" "}
+                    {getFormattedString(
+                      subTask.materialUsages
+                        .map((material) => material.materialUsed)
+                        .join(", ")
+                    )}
                   </p>
                   <p>
-                    <span className="font-semibold">Labour Used</span>{' '}
-{/* {subTask.manPowerUsages.map((material)=>material.workerName).join}   */}
-                </p>
+                    <span className="font-semibold">Labour Used</span>{" "}
+                    {getManpowerUsageStats(subTask.manPowerUsages)}
+                  </p>
                   <p>
-                    <span className="font-semibold">Machinery Used</span>{' '}
-                    {subTask.machineryUsages.map((machine)=>machine.machineName).join(", ")}
+                    <span className="font-semibold">Machinery Used</span>{" "}
+                    {getFormattedString(
+                      subTask.machineryUsages
+                        .map((machine) => machine.machineName)
+                        .join(", ")
+                    )}
                   </p>
                 </div>
               </div>

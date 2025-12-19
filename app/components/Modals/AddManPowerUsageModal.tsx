@@ -1,26 +1,28 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { employees } from '@/app/dummy';
-import { Employee } from '@/app/types';
+import React, { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import { employees } from "@/app/dummy";
+import { Employee, ManPowerUsage } from "@/app/types";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (workers: Employee[]) => void;
+  onSubmit: (workers: ManPowerUsage) => void;
+  selectedManPowers: ManPowerUsage[];
 }
 
 export default function AddManPowerUsageModal({
   isOpen,
   onClose,
   onSubmit,
+  selectedManPowers,
 }: Props) {
-  const [workers, setWorkers] = useState<Employee[]>([]);
+  const [worker, setWorker] = useState<Employee | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
-      setWorkers([]);
+      setWorker(null);
     }
   }, [isOpen]);
 
@@ -28,13 +30,13 @@ export default function AddManPowerUsageModal({
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!workers.length) return;
-    onSubmit(workers);
+    if (!worker) return;
+    onSubmit(worker);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white rounded-3xl w-full max-w-sm shadow-xl">
         <div className="flex justify-between items-center px-6 pt-5 pb-3 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">
@@ -59,26 +61,27 @@ export default function AddManPowerUsageModal({
                          border border-transparent focus:outline-none
                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                          focus:bg-white"
-            //  value={taskData?.assignedTo?._id}
-            //     onChange={(e) => {
-            //       const employeeId = e.target.value;
-            //       const employee = employees.find(user => user._id === employeeId);
-            //       if (employee) {
-            //         handleInputChange('assignedTo', {
-            //           _id: employee._id,
-            //           name: employee.name,
-            //           role: employee.role,
-            //           isSkilled: employee.isSkilled
-            //         });
-            //       }
-            //     }}
+              value={worker?._id ?? ""}
+              onChange={(e) => {
+                const worker = employees.find(
+                  (employee) => employee._id === e.target.value
+                );
+                if (worker) setWorker(worker);
+              }}
             >
               <option value="">Select Worker</option>
-              {employees.map((user) => (
-                <option key={user._id} value={user._id}>
-                  {user.name}
-                </option>
-              ))}
+              {employees
+                .filter(
+                  (employee) =>
+                    !selectedManPowers
+                      .map((manPower) => manPower._id)
+                      .includes(employee._id)
+                )
+                .map((user) => (
+                  <option key={user._id} value={user._id}>
+                    {user.name}
+                  </option>
+                ))}
             </select>
           </div>
 
@@ -88,21 +91,21 @@ export default function AddManPowerUsageModal({
             </label>
             <input
               type="text"
-              // value={role}
-              // onChange={(e) => setRole(e.target.value)}
+              value={worker?.role}
               className="w-full px-3 py-2 rounded-lg bg-gray-100 text-sm
                          border border-transparent focus:outline-none
                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                          focus:bg-white"
+              disabled
             />
           </div>
 
-          <button
+          {/* <button
             type="button"
             className="text-xs text-blue-700 font-medium hover:underline"
           >
             + Add More Workers
-          </button>
+          </button> */}
 
           <div className="flex justify-between pt-3">
             <button
@@ -117,6 +120,7 @@ export default function AddManPowerUsageModal({
               type="submit"
               className="px-6 py-2 rounded-lg text-sm font-medium text-white
                          bg-slate-900 hover:bg-slate-800"
+              disabled={!worker}
             >
               Save
             </button>

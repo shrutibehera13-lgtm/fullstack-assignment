@@ -1,10 +1,10 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import { ReduxProvider } from './ReduxProvider';
+import "./globals.css";
+import type { Metadata } from "next";
+import { ReduxProvider } from "./ReduxProvider";
 
 export const metadata: Metadata = {
-  title: 'Akhlahek Manager',
-  description: 'Construction dashboard',
+  title: "Construction Dashboard",
+  description: "Construction dashboard",
 };
 
 export default function RootLayout({

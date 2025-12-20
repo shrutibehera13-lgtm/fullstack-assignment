@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X, Upload } from "lucide-react";
 import AddMaterialUsageModal from "./AddMaterialUsageModal";
 import AddManPowerUsageModal from "./AddManPowerUsageModal";
@@ -60,6 +60,7 @@ export default function UpdateSubTaskModal({
   const [materialModalOpen, setMaterialModalOpen] = useState(false);
   const [manPowerModalOpen, setManPowerModalOpen] = useState(false);
   const [machineryModalOpen, setMachineryModalOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -86,11 +87,35 @@ export default function UpdateSubTaskModal({
   };
 
   const handleFakeUpload = () => {
-    const url = "https://via.placeholder.com/300x180.png?text=Uploaded";
-    setForm((prev) => ({
-      ...prev,
-      images: [...prev.images, url],
-    }));
+    // Open the hidden file input
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+
+    // Convert files to base64 data URLs so they stay valid when saved
+    const toBase64 = (file: File) =>
+      new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+    try {
+      const base64Images = await Promise.all(files.map(toBase64));
+      setForm((prev) => ({
+        ...prev,
+        images: [...prev.images, ...base64Images],
+      }));
+    } catch (err) {
+      console.error("Failed to read image files", err);
+    } finally {
+      // allow same file to be selected again later
+      e.target.value = "";
+    }
   };
 
   const addMaterialUsage = (item: MaterialUsage) => {
@@ -215,8 +240,8 @@ export default function UpdateSubTaskModal({
               </label>
               <div
                 className="border-2 border-dashed border-gray-300 rounded-xl py-6 px-4
-                           flex flex-col items-center justify-center text-xs text-gray-500
-                           cursor-pointer hover:border-blue-500 hover:text-blue-600"
+             flex flex-col items-center justify-center text-xs text-gray-500
+             cursor-pointer hover:border-blue-500 hover:text-blue-600"
                 onClick={handleFakeUpload}
               >
                 <Upload className="mb-2 text-gray-400" size={22} />
@@ -225,6 +250,17 @@ export default function UpdateSubTaskModal({
                 </p>
                 <p>Png,Jpg,Gif Upto 50MB</p>
               </div>
+
+              {/* Hidden real file input */}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+              />
+
               {form.images.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-1">
                   {form.images.map((src, i) => (

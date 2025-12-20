@@ -13,6 +13,7 @@ import {
   createSubtask,
   deleteSubtask,
   updateSubtask,
+  fetchStatusSummary,
 } from "@/app/store/slices/tasksSlice";
 import { Employee, Labour, Subtask, Task } from "@/app/types";
 import { formatDate } from "@/app/utils/date-utils";
@@ -99,10 +100,13 @@ export default function TasksTable() {
       "Are you sure you want to delete this task?"
     );
     if (!confirmDelete) return;
-    await dispatch(deleteTask(id));
-    if (selectedTaskId === id) {
-      setIsViewTaskOpen(false);
-      setSelectedTaskId(null);
+    const resultAction = await dispatch(deleteTask(id));
+    if (deleteTask.fulfilled.match(resultAction)) {
+      dispatch(fetchStatusSummary());
+      if (selectedTaskId === id) {
+        setIsViewTaskOpen(false);
+        setSelectedTaskId(null);
+      }
     }
   };
 
@@ -186,7 +190,7 @@ export default function TasksTable() {
   }
 
   return (
-    <div className="bg-white p-6">
+    <div className="bg-white p-6 rounded-2xl">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-800">Tasks</h2>
         <div className="relative w-64">
@@ -223,7 +227,7 @@ export default function TasksTable() {
             return (
               <div
                 key={task._id}
-                className="rounded-xl border-2 border-blue-400 bg-white"
+                className="rounded-xl border-2 border-gray-200 bg-white"
               >
                 {/* Header row */}
                 <div className="flex items-start justify-between px-6 py-4 border-b border-gray-200">
@@ -241,24 +245,24 @@ export default function TasksTable() {
 
                   <div className="flex items-center space-x-3">
                     <button className="px-4 py-1.5 rounded text-sm bg-gray-200 text-gray-800">
-                      Construction
+                      {task.category}
                     </button>
                     <button className="px-4 py-1.5 rounded text-sm bg-emerald-100 text-emerald-700 border border-emerald-300">
                       Completed
                     </button>
-                    <button
+                    {/* <button
                       className="px-3 py-1.5 rounded text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-1"
                       onClick={() => handleViewTask(task._id)}
                     >
                       <Pencil size={14} />
                       <span>Edit</span>
-                    </button>
+                    </button> */}
                     <button
                       className="px-3 py-1.5 rounded text-sm border border-red-200 text-red-600 hover:bg-red-50 flex items-center gap-1"
                       onClick={() => handleDeleteTask(task._id)}
                     >
                       <Trash2 size={14} />
-                      <span>Delete</span>
+                      {/* <span>Delete</span> */}
                     </button>
                     <button
                       className="px-4 py-1.5 rounded text-sm bg-slate-900 text-white"
@@ -281,7 +285,7 @@ export default function TasksTable() {
                   </div>
                   <div className="h-2 w-full rounded-full bg-gray-200 overflow-hidden">
                     <div
-                      className="h-full bg-emerald-500"
+                      className="h-full bg-green-500"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -334,10 +338,10 @@ export default function TasksTable() {
                               {subTask.assignedTo.name}
                             </td>
                             <td className="px-4 py-2">
-                              <div className="flex items-center ">
+                              <div className="flex items-center gap-2 ">
                                 <button
                                   type="button"
-                                  className="inline-flex items-center justify-center rounded-full p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                                  className="inline-flex items-center justify-center rounded-md p-1.5 text-gray-600  bg-gray-100"
                                   onClick={() =>
                                     handleViewSubtask(task._id, subTask._id)
                                   }
@@ -347,7 +351,7 @@ export default function TasksTable() {
                                 </button>
                                 <button
                                   type="button"
-                                  className="inline-flex items-center justify-center rounded-full p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                                  className="inline-flex items-center justify-center rounded-md p-1.5 text-blue-600 bg-blue-50"
                                   onClick={() =>
                                     handleOpenEditSubtask(task._id, subTask._id)
                                   }
@@ -357,7 +361,7 @@ export default function TasksTable() {
                                 </button>
                                 <button
                                   type="button"
-                                  className="inline-flex items-center justify-center rounded-full p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50"
+                                  className="inline-flex items-center justify-center rounded-md p-1.5 text-red-600 bg-red-50"
                                   onClick={() =>
                                     openDeleteSubtaskModal(
                                       task._id,

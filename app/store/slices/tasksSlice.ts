@@ -1,7 +1,9 @@
 "use client";
 
+import axios from "@/app/api";
 import { Subtask, Task } from "@/app/types";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { AxiosError } from "axios";
 
 interface TaskStatusSummary {
   _id: string;
@@ -18,8 +20,8 @@ interface TasksState {
   loading: boolean;
   error: string | null;
   currentSubtask: any | null;
-  statusSummary: TaskStatusSummary[]; // NEW
-  statusSummaryLoading: boolean; // NEW
+  statusSummary: TaskStatusSummary[];
+  statusSummaryLoading: boolean;
   statusSummaryError: string | null;
 }
 
@@ -73,7 +75,6 @@ export const createTask = createAsyncThunk<any, any, { rejectValue: string }>(
         const errorBody = await res.json().catch(() => ({}));
         return rejectWithValue(errorBody.error || "Failed to create task");
       }
-
       const createdTask = await res.json();
       return createdTask;
     } catch (err: any) {
@@ -166,6 +167,7 @@ export const createSubtask = createAsyncThunk<
 
       const updatedTask = await res.json();
       dispatch(fetchTasks());
+      dispatch(fetchStatusSummary());
       return updatedTask;
     } catch (err: any) {
       return rejectWithValue(err.message || "Network error");
@@ -194,6 +196,7 @@ export const updateSubtask = createAsyncThunk<
 
       const updatedSubtaskOrTask = await res.json();
       dispatch(fetchTasks());
+      dispatch(fetchStatusSummary());
       return updatedSubtaskOrTask;
     } catch (err: any) {
       return rejectWithValue(err.message || "Network error");
@@ -220,6 +223,7 @@ export const deleteSubtask = createAsyncThunk<
 
       const resp = await res.json();
       dispatch(fetchTasks());
+      dispatch(fetchStatusSummary());
       return resp;
     } catch (err: any) {
       return rejectWithValue(err.message || "Network error");
@@ -265,6 +269,29 @@ export const fetchStatusSummary = createAsyncThunk<
     return data as TaskStatusSummary[];
   } catch (err: any) {
     return rejectWithValue(err.message || "Network error");
+  }
+});
+
+export const addCommentToTask = createAsyncThunk<
+  string,
+  {
+    taskId: string;
+    message: string;
+    subtaskId?: string;
+    employeeId: string;
+    senderName: string;
+  }
+>("tasks/addCommentToTask", async (payload, { rejectWithValue }) => {
+  try {
+    const { taskId, subtaskId, ...rest } = payload;
+    const response = await axios.post(
+      `tasks/${taskId}/subtasks/${subtaskId}/comments`,
+      rest
+    );
+
+    return response.data;
+  } catch (error: unknown) {
+    return rejectWithValue((error as AxiosError).message || "Network error");
   }
 });
 const tasksSlice = createSlice({

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import AddSubTaskModal from "./AddSubTaskModal";
 import SubtaskList from "./SubtaskList";
-import { createTask } from "@/app/store/slices/tasksSlice";
+import { createTask, fetchStatusSummary } from "@/app/store/slices/tasksSlice";
 import { useAppDispatch } from "@/app/store/hooks";
 import { Employee, Subtask, Task } from "@/app/types";
 
@@ -39,11 +39,12 @@ export default function AssignNewTaskModal({
     e.preventDefault();
     const resultAction = await dispatch(createTask(taskData));
     if (createTask.fulfilled.match(resultAction)) {
+      dispatch(fetchStatusSummary());
       onClose();
     } else {
       const errMsg =
         (resultAction.payload as string) || "Failed to create task";
-      alert(errMsg);
+      console.error(errMsg);
     }
   };
 

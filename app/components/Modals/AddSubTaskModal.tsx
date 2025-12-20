@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
-import { Employee, Subtask } from '@/app/types';
+import React, { useState } from "react";
+import { X } from "lucide-react";
+import { Employee, Subtask } from "@/app/types";
 
 interface AddSubTaskModalProps {
   isOpen: boolean;
@@ -17,13 +17,13 @@ export default function AddSubTaskModal({
   onSubmit,
   projects = [],
   employees = [],
-  categories = []
+  categories = [],
 }: AddSubTaskModalProps) {
-  const [subtaskData, setSubtaskData] = useState < Partial<Subtask>>({
-    title: '',
-    projectName: '',
-    location: '',
-    category: '',
+  const [subtaskData, setSubtaskData] = useState<Partial<Subtask>>({
+    title: "",
+    projectName: "",
+    location: "",
+    category: "",
   });
 
   if (!isOpen) return null;
@@ -33,22 +33,25 @@ export default function AddSubTaskModal({
     const subtaskWithId = {
       ...subtaskData,
       id: Date.now().toString(),
-      status: 'in progress',
+      status: "in progress",
     };
     onSubmit(subtaskWithId);
     onClose();
     setSubtaskData({
-      title: '',
-      projectName: '',
-      location: '',
-      category: '',
+      title: "",
+      projectName: "",
+      location: "",
+      category: "",
     });
   };
 
-  const handleInputChange = (field: keyof Subtask, value: Subtask[keyof Subtask]) => {
-    setSubtaskData(prev => ({
+  const handleInputChange = (
+    field: keyof Subtask,
+    value: Subtask[keyof Subtask]
+  ) => {
+    setSubtaskData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -78,7 +81,7 @@ export default function AddSubTaskModal({
               type="text"
               required
               value={subtaskData.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
+              onChange={(e) => handleInputChange("title", e.target.value)}
               placeholder="SubTask Title"
               className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
@@ -94,13 +97,13 @@ export default function AddSubTaskModal({
             <select
               required
               value={subtaskData.projectName}
-              onChange={(e) => handleInputChange('projectName', e.target.value)}
+              onChange={(e) => handleInputChange("projectName", e.target.value)}
               className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                          focus:bg-white text-sm"
             >
               <option value="">Project Name</option>
-              {projects.map(project => (
+              {projects.map((project) => (
                 <option key={project.id} value={project.id}>
                   {project.name}
                 </option>
@@ -117,7 +120,7 @@ export default function AddSubTaskModal({
               type="text"
               required
               value={subtaskData.location}
-              onChange={(e) => handleInputChange('location', e.target.value)}
+              onChange={(e) => handleInputChange("location", e.target.value)}
               placeholder="Location/Floor/Room"
               className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
@@ -133,13 +136,13 @@ export default function AddSubTaskModal({
             <select
               required
               value={subtaskData.category}
-              onChange={(e) => handleInputChange('category', e.target.value)}
+              onChange={(e) => handleInputChange("category", e.target.value)}
               className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                          focus:bg-white text-sm"
             >
               <option value="">SubTask Category</option>
-              {categories.map(category => (
+              {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
@@ -157,13 +160,15 @@ export default function AddSubTaskModal({
               value={subtaskData.assignedTo?._id}
               onChange={(e) => {
                 const employeeId = e.target.value;
-                const employee = employees.find(user => user._id === employeeId);
+                const employee = employees.find(
+                  (user) => user._id === employeeId
+                );
                 if (employee) {
-                  handleInputChange('assignedTo', {
+                  handleInputChange("assignedTo", {
                     _id: employee._id,
                     name: employee.name,
                     role: employee.role,
-                    isSkilled: employee.isSkilled
+                    isSkilled: employee.isSkilled,
                   });
                 }
               }}
@@ -172,7 +177,7 @@ export default function AddSubTaskModal({
                          focus:bg-white text-sm"
             >
               <option value="">Assigned To</option>
-              {employees.map(user => (
+              {employees.map((user) => (
                 <option key={user._id} value={user._id}>
                   {user.name}
                 </option>
@@ -188,8 +193,14 @@ export default function AddSubTaskModal({
             <input
               type="date"
               required
-              value={subtaskData.startDate?.toISOString().split('T')[0]}
-              onChange={(e) => handleInputChange('startDate', new Date(e.target.value))}
+              value={
+                subtaskData.startDate
+                  ? subtaskData.startDate.toISOString().split("T")[0]
+                  : ""
+              }
+              onChange={(e) =>
+                handleInputChange("startDate", new Date(e.target.value))
+              }
               className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                          focus:bg-white text-sm"
@@ -204,8 +215,14 @@ export default function AddSubTaskModal({
             <input
               type="date"
               required
-              value={subtaskData.dueDate?.toISOString().split('T')[0]}
-              onChange={(e) => handleInputChange('dueDate', new Date(e.target.value))}
+              value={
+                subtaskData.dueDate
+                  ? subtaskData.dueDate.toISOString().split("T")[0]
+                  : ""
+              }
+              onChange={(e) =>
+                handleInputChange("dueDate", new Date(e.target.value))
+              }
               className="w-full px-3 py-2 rounded-lg bg-gray-100 border border-transparent
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                          focus:bg-white text-sm"

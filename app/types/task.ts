@@ -12,7 +12,13 @@ export interface Task {
   endDate: Date;
   subtasks: Subtask[];
 }
-
+export interface Comment {
+  senderName: string;
+  message: string;
+  employeeId: string;
+  _id: string;
+  createdAt: string;
+}
 export interface Subtask
   extends Omit<Task, "subtasks" | "endDate" | "priority"> {
   dueDate: Date;
@@ -23,6 +29,7 @@ export interface Subtask
   machineryUsages: MachineryUsage[];
   manPowerUsages: ManPowerUsage[];
   status: "in progress" | "delayed" | "completed" | "not started";
+  comments: Comment[];
 }
 
 export interface MaterialUsage {

@@ -1,29 +1,28 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Sidebar from './Sidebar';
-import Topbar from './Topbar';
-import ProgressLogs from './ProgressLogs';
-import TasksTable from './TasksTable';
-import ProgressChart from './ProgressChart';
-import AssignNewTaskModal from '../Modals/AssignNewTaskModal';
-import { employees } from '@/app/dummy';
+import { useState } from "react";
+import Sidebar from "./Sidebar";
+import Topbar from "./Topbar";
+import ProgressLogs from "./ProgressLogs";
+import TasksTable from "./TasksTable";
+import ProgressChart from "./ProgressChart";
+import AssignNewTaskModal from "../Modals/AssignNewTaskModal";
+import { employees } from "@/app/dummy";
 
 const mockProjects = [
-  { id: '1', name: 'Downtown Tower Plaza' },
-  { id: '2', name: 'Green Valley Apartments' },
-  { id: '3', name: 'Tech Park Office Complex' },
+  { id: "1", name: "Downtown Tower Plaza" },
+  { id: "2", name: "Green Valley Apartments" },
+  { id: "3", name: "Tech Park Office Complex" },
 ];
 
-
 const mockCategories = [
-  'Masonry & Plastering',
-  'Structural Work',
-  'Electrical',
-  'Plumbing',
-  'Painting',
-  'Flooring',
-  'Carpentry',
+  "Masonry & Plastering",
+  "Structural Work",
+  "Electrical",
+  "Plumbing",
+  "Painting",
+  "Flooring",
+  "Carpentry",
 ];
 
 export default function Dashboard() {
@@ -36,13 +35,14 @@ export default function Dashboard() {
         <div className="flex-1 flex flex-col overflow-hidden">
           <Topbar />
           <div className="flex-1 overflow-auto p-6 bg-gray-50">
-            <div className="mb-6 rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="mb-6 rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
                   Work Progress &amp; Execution
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">
-                  Track construction milestones, daily execution, and site performance.
+                  Track construction milestones, daily execution, and site
+                  performance.
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-400">
                   <span className="inline-flex items-center rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700">

@@ -80,9 +80,42 @@ export default function UpdateSubTaskModal({
     }));
   };
 
+  function base64ToFile(base64: string, filename: string) {
+    const arr = base64.split(",");
+    const mime = arr[0].match(/:(.*?);/)![1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    return new File([u8arr], filename, { type: mime });
+  }
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(form);
+    const formData = new FormData();
+    const { images, ...restFormdata } = form;
+    for (const [key, value] of Object.entries(restFormdata)) {
+      if (typeof value === "string") {
+        formData.append(key, value);
+      } else formData.append(key, JSON.stringify(value));
+    }
+    formData.append(
+      "images",
+      JSON.stringify(form.images.filter((image) => image.includes("uploads")))
+    );
+    form.images
+      .filter((image) => !image.includes("uploads"))
+      .forEach((image, index) => {
+        const blobImage = base64ToFile(image, `images-${index}.png`);
+        console.log(blobImage);
+        formData.append("newImages", blobImage);
+      });
+
+    onSave(formData);
     onClose();
   };
 

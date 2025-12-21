@@ -69,6 +69,11 @@ export default function ViewTaskModal({
     visibleSubTasks.find((st) => st._id === activeCommentsSubtaskId) ?? null;
   const comments = activeSubtask?.comments ?? [];
 
+  const taskImages = task.subtasks
+    .map((subtask) => subtask.images)
+    .flat()
+    .map((src) => process.env.NEXT_PUBLIC_IMG_BASE_URL + src);
+
   const handleSendReply = async () => {
     if (!replyText.trim() || !user) return;
     await dispatch(
@@ -194,7 +199,7 @@ export default function ViewTaskModal({
                         Images
                       </p>
                       <div className="flex gap-2 overflow-x-auto">
-                        {placeholderImages.map((src, i) => (
+                        {taskImages.map((src, i) => (
                           <img
                             key={i}
                             src={src}

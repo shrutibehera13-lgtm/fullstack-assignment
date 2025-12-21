@@ -70,7 +70,6 @@ export default function AddSubTaskModal({
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="px-6 pt-4 pb-6 space-y-2">
           {/* SubTask Title */}
           <div className="space-y-1">

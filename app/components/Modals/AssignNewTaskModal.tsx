@@ -62,6 +62,13 @@ export default function AssignNewTaskModal({
     }));
   };
 
+  const handleRemoveSubtask = (subtaskId: string) => {
+    setTaskData((prev) => ({
+      ...prev,
+      subtasks: prev.subtasks?.filter((subtask) => subtask._id !== subtaskId),
+    }));
+  };
+
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -260,7 +267,10 @@ export default function AssignNewTaskModal({
                 {taskData?.subtasks?.length === 0 ? (
                   <span className="text-gray-400">No subtasks added</span>
                 ) : (
-                  <SubtaskList subtasks={taskData?.subtasks ?? []} />
+                  <SubtaskList
+                    subtasks={taskData?.subtasks ?? []}
+                    onRemoveSubtask={handleRemoveSubtask}
+                  />
                 )}
               </div>
             </div>

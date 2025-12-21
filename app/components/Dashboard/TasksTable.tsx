@@ -18,11 +18,17 @@ import {
 import { Employee, Labour, Subtask, Task } from "@/app/types";
 import { formatDate } from "@/app/utils/date-utils";
 import { employees } from "@/app/dummy";
+import ConfirmDeleteModal from "../Modals/ConfirmDeleteModal";
 
 type EditingSubtaskContext = {
   taskId: string;
   subtaskId: string;
 } | null;
+
+type DeleteContext =
+  | { type: "task"; taskId: string; taskTitle: string }
+  | { type: "subtask"; taskId: string; subtaskId: string; subtaskName: string }
+  | null;
 
 export default function TasksTable() {
   const dispatch = useAppDispatch();
@@ -36,15 +42,7 @@ export default function TasksTable() {
   const [isAddSubTaskOpen, setIsAddSubTaskOpen] = useState(false);
   const [isViewTaskOpen, setIsViewTaskOpen] = useState(false);
   const [viewSubtaskId, setViewSubtaskId] = useState<string | null>(null);
-
-  const [deleteTarget, setDeleteTarget] = useState<{
-    taskId: string;
-    subtaskId: string;
-    subtaskName: string;
-  } | null>(null);
-  const [isDeleteSubtaskModalOpen, setIsDeleteSubtaskModalOpen] =
-    useState(false);
-
+  const [deleteContext, setDeleteContext] = useState<DeleteContext>(null);
   const [isUpdateSubTaskOpen, setIsUpdateSubTaskOpen] = useState(false);
   const [editingSubtask, setEditingSubtask] =
     useState<EditingSubtaskContext>(null);
@@ -95,19 +93,12 @@ export default function TasksTable() {
     dispatch(fetchTaskById(taskId));
   };
 
-  const handleDeleteTask = async (id: string) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this task?"
-    );
-    if (!confirmDelete) return;
-    const resultAction = await dispatch(deleteTask(id));
-    if (deleteTask.fulfilled.match(resultAction)) {
-      dispatch(fetchStatusSummary());
-      if (selectedTaskId === id) {
-        setIsViewTaskOpen(false);
-        setSelectedTaskId(null);
-      }
-    }
+  const openDeleteTaskModal = (taskId: string, taskTitle: string) => {
+    setDeleteContext({
+      type: "task",
+      taskId,
+      taskTitle,
+    });
   };
 
   const handleCreateSubtask = async (formData: Partial<Subtask>) => {
@@ -126,20 +117,40 @@ export default function TasksTable() {
     subtaskId: string,
     subtaskName: string
   ) => {
-    setDeleteTarget({ taskId, subtaskId, subtaskName });
-    setIsDeleteSubtaskModalOpen(true);
+    setDeleteContext({
+      type: "subtask",
+      taskId,
+      subtaskId,
+      subtaskName,
+    });
   };
 
-  const handleConfirmDeleteSubtask = async () => {
-    if (!deleteTarget) return;
-    await dispatch(
-      deleteSubtask({
-        taskId: deleteTarget.taskId,
-        subtaskId: deleteTarget.subtaskId,
-      })
-    );
-    setIsDeleteSubtaskModalOpen(false);
-    setDeleteTarget(null);
+  const handleConfirmDelete = async () => {
+    if (!deleteContext) return;
+
+    if (deleteContext.type === "task") {
+      const resultAction = await dispatch(deleteTask(deleteContext.taskId));
+
+      if (deleteTask.fulfilled.match(resultAction)) {
+        dispatch(fetchStatusSummary());
+
+        if (selectedTaskId === deleteContext.taskId) {
+          setIsViewTaskOpen(false);
+          setSelectedTaskId(null);
+        }
+      }
+    }
+
+    if (deleteContext.type === "subtask") {
+      await dispatch(
+        deleteSubtask({
+          taskId: deleteContext.taskId,
+          subtaskId: deleteContext.subtaskId,
+        })
+      );
+    }
+
+    setDeleteContext(null);
   };
 
   const handleOpenCreateSubtask = (taskId: string) => {
@@ -259,11 +270,11 @@ export default function TasksTable() {
                     </button> */}
                     <button
                       className="px-3 py-1.5 rounded text-sm border border-red-200 text-red-600 hover:bg-red-50 flex items-center gap-1"
-                      onClick={() => handleDeleteTask(task._id)}
+                      onClick={() => openDeleteTaskModal(task._id, task.title)}
                     >
                       <Trash2 size={14} />
-                      {/* <span>Delete</span> */}
                     </button>
+
                     <button
                       className="px-4 py-1.5 rounded text-sm bg-slate-900 text-white"
                       onClick={() => handleOpenCreateSubtask(task._id)}
@@ -435,57 +446,31 @@ export default function TasksTable() {
       )}
 
       {/* Delete Subtask Confirm Modal */}
-      {isDeleteSubtaskModalOpen && deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm shadow-xl">
-            <div className="flex justify-between items-center px-5 pt-4 pb-2 border-b border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-900">
-                Delete Subtask
-              </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsDeleteSubtaskModalOpen(false);
-                  setDeleteTarget(null);
-                }}
-                className="p-1.5 rounded-full hover:bg-gray-100"
-              >
-                <X size={16} className="text-gray-500" />
-              </button>
-            </div>
-
-            <div className="px-5 py-4 text-sm text-gray-700">
-              <p>
-                Are you sure you want to delete subtask{" "}
-                <span className="font-semibold">
-                  “{deleteTarget.subtaskName}”
-                </span>
-                ? This action cannot be undone.
-              </p>
-            </div>
-
-            <div className="flex justify-end gap-3 px-5 pb-4 pt-2 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsDeleteSubtaskModalOpen(false);
-                  setDeleteTarget(null);
-                }}
-                className="px-4 py-2 rounded-lg border border-gray-300 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDeleteSubtask}
-                className="px-4 py-2 rounded-lg text-xs font-medium text-white bg-red-600 hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDeleteModal
+        isOpen={!!deleteContext}
+        title={
+          deleteContext?.type === "task" ? "Delete Task" : "Delete Subtask"
+        }
+        description={
+          deleteContext?.type === "task" ? (
+            <p>
+              Are you sure you want to delete task{" "}
+              <span className="font-semibold">“{deleteContext.taskTitle}”</span>
+              ? This action cannot be undone.
+            </p>
+          ) : (
+            <p>
+              Are you sure you want to delete subtask{" "}
+              <span className="font-semibold">
+                “{deleteContext?.subtaskName}”
+              </span>
+              ? This action cannot be undone.
+            </p>
+          )
+        }
+        onCancel={() => setDeleteContext(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

@@ -183,18 +183,12 @@ export const updateSubtask = createAsyncThunk<
   "tasks/updateSubtask",
   async ({ taskId, subtaskId, data }, { rejectWithValue, dispatch }) => {
     try {
-      const res = await fetch(`${API_BASE}/${taskId}/subtasks/${subtaskId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const res = await axios.put(
+        `/tasks/${taskId}/subtasks/${subtaskId}`,
+        data
+      );
 
-      if (!res.ok) {
-        const errorBody = await res.json().catch(() => ({}));
-        return rejectWithValue(errorBody.error || "Failed to update subtask");
-      }
-
-      const updatedSubtaskOrTask = await res.json();
+      const updatedSubtaskOrTask = res.data;
       dispatch(fetchTasks());
       dispatch(fetchStatusSummary());
       return updatedSubtaskOrTask;

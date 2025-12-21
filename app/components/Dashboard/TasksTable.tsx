@@ -19,6 +19,7 @@ import { Employee, Labour, Subtask, Task } from "@/app/types";
 import { formatDate } from "@/app/utils/date-utils";
 import { employees } from "@/app/dummy";
 import ConfirmDeleteModal from "../Modals/ConfirmDeleteModal";
+import AssignNewTaskModal from "../Modals/AssignNewTaskModal";
 
 type EditingSubtaskContext = {
   taskId: string;
@@ -44,6 +45,9 @@ export default function TasksTable() {
   const [viewSubtaskId, setViewSubtaskId] = useState<string | null>(null);
   const [deleteContext, setDeleteContext] = useState<DeleteContext>(null);
   const [isUpdateSubTaskOpen, setIsUpdateSubTaskOpen] = useState(false);
+  const [isEditTaskOpen, setIsEditTaskOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
   const [editingSubtask, setEditingSubtask] =
     useState<EditingSubtaskContext>(null);
 
@@ -261,13 +265,16 @@ export default function TasksTable() {
                     <button className="px-4 py-1.5 rounded text-sm bg-emerald-100 text-emerald-700 border border-emerald-300">
                       Completed
                     </button>
-                    {/* <button
-                      className="px-3 py-1.5 rounded text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-1"
-                      onClick={() => handleViewTask(task._id)}
+                    <button
+                      className="px-3 py-1.5 rounded text-sm border border-gray-300"
+                      onClick={() => {
+                        setEditingTask(task);
+                        setIsEditTaskOpen(true);
+                      }}
                     >
                       <Pencil size={14} />
-                      <span>Edit</span>
-                    </button> */}
+                    </button>
+
                     <button
                       className="px-3 py-1.5 rounded text-sm border border-red-200 text-red-600 hover:bg-red-50 flex items-center gap-1"
                       onClick={() => openDeleteTaskModal(task._id, task.title)}
@@ -442,6 +449,21 @@ export default function TasksTable() {
           }}
           initialValues={updateInitialValues}
           onSave={handleUpdateSubtaskSave}
+        />
+      )}
+
+      {editingTask && (
+        <AssignNewTaskModal
+          isOpen={isEditTaskOpen}
+          onClose={() => {
+            setIsEditTaskOpen(false);
+            setEditingTask(null);
+          }}
+          projects={projects}
+          employees={employees}
+          categories={categories}
+          mode="edit"
+          initialData={editingTask}
         />
       )}
 

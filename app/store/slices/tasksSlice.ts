@@ -48,16 +48,13 @@ export const fetchTasks = createAsyncThunk<
       ? `${API_BASE}?search=${encodeURIComponent(search)}`
       : API_BASE;
 
-    const res = await fetch(url);
-    if (!res.ok) {
-      const errorBody = await res.json().catch(() => ({}));
-      return rejectWithValue(errorBody.error || "Failed to fetch tasks");
-    }
-
-    const data = await res.json();
+    const res = await axios.get<any[]>(url);
+    const data = res.data;
     return data as any[];
   } catch (err: any) {
-    return rejectWithValue(err.message || "Network error");
+    const error = err as AxiosError<any>;
+    const errorBody = (error.response?.data as any) || {};
+    return rejectWithValue(errorBody.error || error.message || "Network error");
   }
 });
 
@@ -65,20 +62,15 @@ export const createTask = createAsyncThunk<any, any, { rejectValue: string }>(
   "tasks/createTask",
   async (taskData, { rejectWithValue }) => {
     try {
-      const res = await fetch(API_BASE, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(taskData),
-      });
-
-      if (!res.ok) {
-        const errorBody = await res.json().catch(() => ({}));
-        return rejectWithValue(errorBody.error || "Failed to create task");
-      }
-      const createdTask = await res.json();
+      const res = await axios.post(API_BASE, taskData);
+      const createdTask = res.data;
       return createdTask;
     } catch (err: any) {
-      return rejectWithValue(err.message || "Network error");
+      const error = err as AxiosError<any>;
+      const errorBody = (error.response?.data as any) || {};
+      return rejectWithValue(
+        errorBody.error || error.message || "Network error"
+      );
     }
   }
 );
@@ -89,15 +81,13 @@ export const fetchTaskById = createAsyncThunk<
   { rejectValue: string }
 >("tasks/fetchTaskById", async (id, { rejectWithValue }) => {
   try {
-    const res = await fetch(`${API_BASE}/${id}`);
-    if (!res.ok) {
-      const errorBody = await res.json().catch(() => ({}));
-      return rejectWithValue(errorBody.error || "Failed to fetch task");
-    }
-    const task = await res.json();
+    const res = await axios.get(`${API_BASE}/${id}`);
+    const task = res.data;
     return task;
   } catch (err: any) {
-    return rejectWithValue(err.message || "Network error");
+    const error = err as AxiosError<any>;
+    const errorBody = (error.response?.data as any) || {};
+    return rejectWithValue(errorBody.error || error.message || "Network error");
   }
 });
 
@@ -107,21 +97,13 @@ export const updateTask = createAsyncThunk<
   { rejectValue: string }
 >("tasks/updateTask", async ({ id, data }, { rejectWithValue }) => {
   try {
-    const res = await fetch(`${API_BASE}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-      const errorBody = await res.json().catch(() => ({}));
-      return rejectWithValue(errorBody.error || "Failed to update task");
-    }
-
-    const updatedTask = await res.json();
+    const res = await axios.put(`${API_BASE}/${id}`, data);
+    const updatedTask = res.data;
     return updatedTask;
   } catch (err: any) {
-    return rejectWithValue(err.message || "Network error");
+    const error = err as AxiosError<any>;
+    const errorBody = (error.response?.data as any) || {};
+    return rejectWithValue(errorBody.error || error.message || "Network error");
   }
 });
 
@@ -131,18 +113,12 @@ export const deleteTask = createAsyncThunk<
   { rejectValue: string }
 >("tasks/deleteTask", async (id, { rejectWithValue }) => {
   try {
-    const res = await fetch(`${API_BASE}/${id}`, {
-      method: "DELETE",
-    });
-
-    if (!res.ok) {
-      const errorBody = await res.json().catch(() => ({}));
-      return rejectWithValue(errorBody.error || "Failed to delete task");
-    }
-
+    await axios.delete(`${API_BASE}/${id}`);
     return id;
   } catch (err: any) {
-    return rejectWithValue(err.message || "Network error");
+    const error = err as AxiosError<any>;
+    const errorBody = (error.response?.data as any) || {};
+    return rejectWithValue(errorBody.error || error.message || "Network error");
   }
 });
 
@@ -154,23 +130,17 @@ export const createSubtask = createAsyncThunk<
   "tasks/createSubtask",
   async ({ taskId, subtask }, { rejectWithValue, dispatch }) => {
     try {
-      const res = await fetch(`${API_BASE}/${taskId}/subtasks`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(subtask),
-      });
-
-      if (!res.ok) {
-        const errorBody = await res.json().catch(() => ({}));
-        return rejectWithValue(errorBody.error || "Failed to create subtask");
-      }
-
-      const updatedTask = await res.json();
+      const res = await axios.post(`${API_BASE}/${taskId}/subtasks`, subtask);
+      const updatedTask = res.data;
       dispatch(fetchTasks());
       dispatch(fetchStatusSummary());
       return updatedTask;
     } catch (err: any) {
-      return rejectWithValue(err.message || "Network error");
+      const error = err as AxiosError<any>;
+      const errorBody = (error.response?.data as any) || {};
+      return rejectWithValue(
+        errorBody.error || error.message || "Network error"
+      );
     }
   }
 );
@@ -206,21 +176,19 @@ export const deleteSubtask = createAsyncThunk<
   "tasks/deleteSubtask",
   async ({ taskId, subtaskId }, { rejectWithValue, dispatch }) => {
     try {
-      const res = await fetch(`${API_BASE}/${taskId}/subtasks/${subtaskId}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        const errorBody = await res.json().catch(() => ({}));
-        return rejectWithValue(errorBody.error || "Failed to delete subtask");
-      }
-
-      const resp = await res.json();
+      const res = await axios.delete(
+        `${API_BASE}/${taskId}/subtasks/${subtaskId}`
+      );
+      const resp = res.data;
       dispatch(fetchTasks());
       dispatch(fetchStatusSummary());
       return resp;
     } catch (err: any) {
-      return rejectWithValue(err.message || "Network error");
+      const error = err as AxiosError<any>;
+      const errorBody = (error.response?.data as any) || {};
+      return rejectWithValue(
+        errorBody.error || error.message || "Network error"
+      );
     }
   }
 );
@@ -230,18 +198,20 @@ export const fetchSubTaskById = createAsyncThunk<
   { taskId: string; subtaskId: string },
   { rejectValue: string }
 >(
-  "tasks/fetchSubTaskById", // 🔹 unique type prefix
+  "tasks/fetchSubTaskById",
   async ({ taskId, subtaskId }, { rejectWithValue }) => {
     try {
-      const res = await fetch(`${API_BASE}/${taskId}/subtasks/${subtaskId}`);
-      if (!res.ok) {
-        const errorBody = await res.json().catch(() => ({}));
-        return rejectWithValue(errorBody.error || "Failed to fetch subtask");
-      }
-      const subtask = await res.json();
+      const res = await axios.get(
+        `${API_BASE}/${taskId}/subtasks/${subtaskId}`
+      );
+      const subtask = res.data;
       return subtask;
     } catch (err: any) {
-      return rejectWithValue(err.message || "Network error");
+      const error = err as AxiosError<any>;
+      const errorBody = (error.response?.data as any) || {};
+      return rejectWithValue(
+        errorBody.error || error.message || "Network error"
+      );
     }
   }
 );
@@ -252,17 +222,13 @@ export const fetchStatusSummary = createAsyncThunk<
   { rejectValue: string }
 >("tasks/fetchStatusSummary", async (_, { rejectWithValue }) => {
   try {
-    const res = await fetch(`${API_BASE}/status-summary`);
-    if (!res.ok) {
-      const errorBody = await res.json().catch(() => ({}));
-      return rejectWithValue(
-        errorBody.error || "Failed to fetch status summary"
-      );
-    }
-    const data = await res.json();
+    const res = await axios.get(`${API_BASE}/status-summary`);
+    const data = res.data;
     return data as TaskStatusSummary[];
   } catch (err: any) {
-    return rejectWithValue(err.message || "Network error");
+    const error = err as AxiosError<any>;
+    const errorBody = (error.response?.data as any) || {};
+    return rejectWithValue(errorBody.error || error.message || "Network error");
   }
 });
 

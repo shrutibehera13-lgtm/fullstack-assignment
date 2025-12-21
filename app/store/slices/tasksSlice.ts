@@ -35,7 +35,7 @@ const initialState: TasksState = {
   statusSummaryError: null,
 };
 
-const API_BASE = "http://localhost:5000/api/tasks";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL + "/tasks";
 
 export const fetchTasks = createAsyncThunk<
   any[],

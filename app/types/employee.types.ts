@@ -3,7 +3,7 @@ export interface Employee {
   name: string;
   role: Role;
   isSkilled: boolean;
-  email: string;
+  email?: string;
 }
 
 export type Role = "labour" | "engineer" | "supervisor";

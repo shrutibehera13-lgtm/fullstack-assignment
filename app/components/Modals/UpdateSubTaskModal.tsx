@@ -28,6 +28,7 @@ const emptyState: Omit<
   | "_id"
   | "assignedTo"
   | "startDate"
+  | "comments"
 > = {
   title: "",
   status: "in progress",
@@ -115,7 +116,7 @@ export default function UpdateSubTaskModal({
         formData.append("newImages", blobImage);
       });
 
-    onSave(formData);
+    // onSave(formData);
     onClose();
   };
 

@@ -10,10 +10,10 @@ interface UserState {
 const initialState: UserState = {
   user: {
     _id: "69467e9e56a55f1b67634225",
-    name: "Subham",
+    name: "Shruti",
     role: "engineer",
     isSkilled: true,
-    email: "subham@example.com",
+    email: "shruti@example.com",
   },
   loading: false,
   error: null,

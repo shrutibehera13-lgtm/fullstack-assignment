@@ -20,6 +20,7 @@ import { formatDate } from "@/app/utils/date-utils";
 import { employees } from "@/app/dummy";
 import ConfirmDeleteModal from "../Modals/ConfirmDeleteModal";
 import AssignNewTaskModal from "../Modals/AssignNewTaskModal";
+import { getTaskProgress } from "@/app/utils/task-utils";
 
 type EditingSubtaskContext = {
   taskId: string;
@@ -173,7 +174,7 @@ export default function TasksTable() {
     setIsUpdateSubTaskOpen(true);
   };
 
-  const handleUpdateSubtaskSave = async (data: Partial<Subtask>) => {
+  const handleUpdateSubtaskSave = async (data: FormData) => {
     if (!editingSubtask) return;
     await dispatch(
       updateSubtask({
@@ -231,14 +232,7 @@ export default function TasksTable() {
       ) : (
         <div className="space-y-6">
           {uiTasks.map((task) => {
-            const completedCount = task.subtasks.filter(
-              (s) => s.status.toLowerCase() === "completed"
-            ).length;
-            const progress =
-              task.subtasks.length === 0
-                ? 0
-                : Math.round((completedCount / task.subtasks.length) * 100);
-
+            const { progress, status } = getTaskProgress(task.subtasks);
             return (
               <div
                 key={task._id}
@@ -262,9 +256,22 @@ export default function TasksTable() {
                     <button className="px-4 py-1.5 rounded text-sm bg-gray-200 text-gray-800">
                       {task.category}
                     </button>
-                    <button className="px-4 py-1.5 rounded text-sm bg-emerald-100 text-emerald-700 border border-emerald-300">
-                      Completed
-                    </button>
+                    <span
+                      className={`px-4 py-1.5 rounded text-sm font-medium capitalize border
+    ${
+      status === "completed"
+        ? "bg-emerald-100 text-emerald-700 border-emerald-300"
+        : status === "delayed"
+        ? "bg-red-100 text-red-700 border-red-300"
+        : status === "in progress"
+        ? "bg-blue-100 text-blue-700 border-blue-300"
+        : "bg-gray-100 text-gray-600 border-gray-300"
+    }
+  `}
+                    >
+                      {status}
+                    </span>
+
                     <button
                       className="px-3 py-1.5 rounded text-sm border border-gray-300"
                       onClick={() => {
@@ -303,7 +310,15 @@ export default function TasksTable() {
                   </div>
                   <div className="h-2 w-full rounded-full bg-gray-200 overflow-hidden">
                     <div
-                      className="h-full bg-green-500"
+                      className={`h-full ${
+                        status === "completed"
+                          ? "bg-emerald-500"
+                          : status === "delayed"
+                          ? "bg-red-500"
+                          : status === "in progress"
+                          ? "bg-blue-500"
+                          : "bg-gray-400"
+                      }`}
                       style={{ width: `${progress}%` }}
                     />
                   </div>

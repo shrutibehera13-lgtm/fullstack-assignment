@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import { ManPowerUsage, Subtask, Task } from "@/app/types";
 import { formatDate } from "@/app/utils/date-utils";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
-import { addCommentToTask } from "@/app/store/slices/tasksSlice";
+import { addCommentToTask, fetchTasks } from "@/app/store/slices/tasksSlice";
 
 interface ViewTaskModalProps {
   isOpen: boolean;
@@ -30,6 +30,8 @@ export default function ViewTaskModal({
     string | null
   >(null);
   const [replyText, setReplyText] = useState("");
+  const DUMMY_AVATAR =
+    "https://ui-avatars.com/api/?name=User&background=CBD5E1&color=1F2937";
 
   if (!isOpen) return null;
 
@@ -85,7 +87,7 @@ export default function ViewTaskModal({
         senderName: user?.name,
       })
     );
-
+    await dispatch(fetchTasks());
     setReplyText("");
   };
 
@@ -271,16 +273,21 @@ export default function ViewTaskModal({
                             key={comment._id}
                             className="flex justify-end text-xs text-white"
                           >
-                            <div className="bg-slate-800 rounded-2xl px-3 py-2 max-w-xs">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-semibold">
-                                  {comment.senderName}
-                                </span>
-                                <span className="text-[10px] opacity-80">
-                                  Engineer
-                                </span>
+                            <div className="bg-slate-800 rounded-2xl px-3 py-2 max-w-xs w-100">
+                              <div className="flex justify-between">
+                                <div className="text-[10px] text-gray-400">
+                                  {formatDate(new Date(comment.createdAt))}
+                                </div>
+                                <div className="text-right mb-2">
+                                  <div className="font-semibold text-[13px]">
+                                    {comment.senderName}
+                                  </div>
+                                  <div className="text-[10px] opacity-80">
+                                    Engineer
+                                  </div>
+                                </div>
                               </div>
-                              <p className="text-[11px] leading-snug">
+                              <p className="text-[13px] leading-snug text-right">
                                 {comment.message}
                               </p>
                             </div>
@@ -294,7 +301,7 @@ export default function ViewTaskModal({
                         >
                           <div className="flex items-center justify-between mb-1">
                             <div>
-                              <p className="font-semibold">
+                              <p className="font-semibold text-[13px]">
                                 {comment.senderName}
                               </p>
                               <p className="text-[10px] text-gray-500">
@@ -305,7 +312,7 @@ export default function ViewTaskModal({
                               {formatDate(new Date(comment.createdAt))}
                             </span>
                           </div>
-                          <p className="text-[11px] leading-snug">
+                          <p className="text-[13px] leading-snug">
                             {comment.message}
                           </p>
                         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { X, Upload } from "lucide-react";
+import { X, Upload, FileX2 } from "lucide-react";
 import AddMaterialUsageModal from "./AddMaterialUsageModal";
 import AddManPowerUsageModal from "./AddManPowerUsageModal";
 import AddMachineUsageModal from "./AddMachineUsageModal";
@@ -16,7 +16,7 @@ interface UpdateSubTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialValues: Subtask;
-  onSave: (data: typeof emptyState) => void;
+  onSave: (data: FormData) => void;
 }
 
 const emptyState: Omit<
@@ -61,6 +61,10 @@ export default function UpdateSubTaskModal({
   const [materialModalOpen, setMaterialModalOpen] = useState(false);
   const [manPowerModalOpen, setManPowerModalOpen] = useState(false);
   const [machineryModalOpen, setMachineryModalOpen] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState<Array<File>>([]);
+  const [uploadedimagesPreview, setUploadedimagesPreview] = useState<
+    Array<string>
+  >([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -108,15 +112,9 @@ export default function UpdateSubTaskModal({
       "images",
       JSON.stringify(form.images.filter((image) => image.includes("uploads")))
     );
-    form.images
-      .filter((image) => !image.includes("uploads"))
-      .forEach((image, index) => {
-        const blobImage = base64ToFile(image, `images-${index}.png`);
-        console.log(blobImage);
-        formData.append("newImages", blobImage);
-      });
+    uploadedImages.forEach((image) => formData.append("newImages", image));
 
-    // onSave(formData);
+    onSave(formData);
     onClose();
   };
 
@@ -128,8 +126,18 @@ export default function UpdateSubTaskModal({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
+    setUploadedImages((val) => [...val, ...files]);
+  };
 
-    // Convert files to base64 data URLs so they stay valid when saved
+  const addMaterialUsage = (item: MaterialUsage) => {
+    setForm((prev) => ({
+      ...prev,
+      materialUsages: [...prev.materialUsages, item],
+    }));
+  };
+
+  const convertUploadedImagesToBase64 = async (): Promise<Array<string>> => {
+    const images = uploadedImages.map((image) => URL.createObjectURL(image));
     const toBase64 = (file: File) =>
       new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -139,24 +147,11 @@ export default function UpdateSubTaskModal({
       });
 
     try {
-      const base64Images = await Promise.all(files.map(toBase64));
-      setForm((prev) => ({
-        ...prev,
-        images: [...prev.images, ...base64Images],
-      }));
-    } catch (err) {
-      console.error("Failed to read image files", err);
-    } finally {
-      // allow same file to be selected again later
-      e.target.value = "";
+      const base64Images = await Promise.all(uploadedImages.map(toBase64));
+      return base64Images;
+    } catch (error) {
+      return [];
     }
-  };
-
-  const addMaterialUsage = (item: MaterialUsage) => {
-    setForm((prev) => ({
-      ...prev,
-      materialUsages: [...prev.materialUsages, item],
-    }));
   };
 
   const addManPowerUsage = (item: ManPowerUsage) => {
@@ -171,6 +166,31 @@ export default function UpdateSubTaskModal({
       ...prev,
       machineryUsages: [...prev.machineryUsages, item],
     }));
+  };
+
+  useEffect(() => {
+    (async () => {
+      const base64Images = await convertUploadedImagesToBase64();
+      setUploadedimagesPreview(base64Images);
+    })();
+  }, [uploadedImages]);
+
+  const handleRemoveImage = (imageIdx: number, type: "FORM" | "UPLOADED") => {
+    switch (type) {
+      case "FORM":
+        setForm((prev) => ({
+          ...prev,
+          images: prev.images.filter((image, idx) => idx !== imageIdx),
+        }));
+        break;
+      case "UPLOADED":
+        setUploadedImages((prev) =>
+          prev.filter((image, idx) => idx !== imageIdx)
+        );
+        break;
+      default:
+        break;
+    }
   };
 
   return (
@@ -284,8 +304,6 @@ export default function UpdateSubTaskModal({
                 </p>
                 <p>Png,Jpg,Gif Upto 50MB</p>
               </div>
-
-              {/* Hidden real file input */}
               <input
                 type="file"
                 accept="image/*"
@@ -295,40 +313,63 @@ export default function UpdateSubTaskModal({
                 className="hidden"
               />
 
-              {form.images.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {form.images.map((src, i) => (
+              <div className="flex flex-wrap gap-2 mt-1 relative">
+                {form.images?.map((src, i) => (
+                  <div
+                    key={`form-image-${i}`}
+                    className="h-12 w-20 rounded-md relative shadow border border-gray-400"
+                  >
+                    <X
+                      className="absolute top-1 right-1 text-gray-400 aspect-square w-3 h-3 rounded-full bg-black"
+                      onClick={() => handleRemoveImage(i, "FORM")}
+                    />
                     <img
-                      key={i}
+                      src={process.env.NEXT_PUBLIC_IMG_BASE_URL + src}
+                      alt="Uploaded"
+                      className="h-12 w-20 rounded-md object-cover"
+                    />
+                  </div>
+                ))}
+
+                {uploadedimagesPreview.map((src, i) => (
+                  <div
+                    key={`uploaded-image-${i}`}
+                    className="h-12 w-20 rounded-md relative shadow border border-gray-400"
+                  >
+                    <X
+                      className="absolute top-1 right-1 text-gray-400 aspect-square w-3 h-3 rounded-full bg-black"
+                      onClick={() => handleRemoveImage(i, "UPLOADED")}
+                    />
+                    <img
                       src={src}
                       alt="Uploaded"
                       className="h-12 w-20 rounded-md object-cover"
                     />
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Bottom usage buttons */}
-            <div className="flex flex-wrap gap-2 pt-2">
+            <div className="flex gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setMaterialModalOpen(true)}
-                className="px-3 py-1.5 rounded-full border border-gray-300 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="flex-1 px-3 py-2 rounded-md bg-slate-900 text-white text-xs font-medium hover:bg-slate-800"
               >
                 + Material Usage
               </button>
               <button
                 type="button"
                 onClick={() => setManPowerModalOpen(true)}
-                className="px-3 py-1.5 rounded-full border border-gray-300 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="flex-1 px-3 py-2 rounded-md bg-slate-900 text-white text-xs font-medium hover:bg-slate-800"
               >
                 + Man Power
               </button>
               <button
                 type="button"
                 onClick={() => setMachineryModalOpen(true)}
-                className="px-3 py-1.5 rounded-full border border-gray-300 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="flex-1 px-3 py-2 rounded-md bg-slate-900 text-white text-xs font-medium hover:bg-slate-800"
               >
                 + Machinery
               </button>

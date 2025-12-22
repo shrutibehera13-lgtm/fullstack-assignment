@@ -313,6 +313,7 @@ export default function AssignNewTaskModal({
                       <SubtaskList
                         subtasks={taskData?.subtasks ?? []}
                         onRemoveSubtask={handleRemoveSubtask}
+                        key={"test"}
                       />
                     )}
                   </div>

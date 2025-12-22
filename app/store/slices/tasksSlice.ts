@@ -147,14 +147,14 @@ export const createSubtask = createAsyncThunk<
 
 export const updateSubtask = createAsyncThunk<
   any,
-  { taskId: string; subtaskId: string; data: any },
+  { taskId: string; subtaskId: string; data: FormData },
   { rejectValue: string }
 >(
   "tasks/updateSubtask",
   async ({ taskId, subtaskId, data }, { rejectWithValue, dispatch }) => {
     try {
       const res = await axios.put(
-        `/tasks/${taskId}/subtasks/${subtaskId}`,
+        `${API_BASE}/${taskId}/subtasks/${subtaskId}`,
         data
       );
 
@@ -245,7 +245,7 @@ export const addCommentToTask = createAsyncThunk<
   try {
     const { taskId, subtaskId, ...rest } = payload;
     const response = await axios.post(
-      `tasks/${taskId}/subtasks/${subtaskId}/comments`,
+      `${API_BASE}/${taskId}/subtasks/${subtaskId}/comments`,
       rest
     );
 
